@@ -95,7 +95,7 @@ $pass = verify($stringToSign, $signature, $publicKey);
 if (!$pass)
 {
     error_log("verify signature fail");
-    http_response_code(400);
+    http_response_code(403);
     return;
 }
 
@@ -106,7 +106,7 @@ error_log($content);
 if (!empty($contentMd5) && $contentMd5 != base64_encode(md5($content)))
 {
     error_log("md5 mismatch");
-    http_response_code(401);
+    http_response_code(500);
     return;
 }
 
@@ -118,7 +118,7 @@ echo "MessageId: " . $msg->MessageId . "\n";
 echo "MessageMD5: " . $msg->MessageMD5 . "\n";
 echo "Message: " . $msg->Message . "\n";
 echo "______________________________________________________\n";
-http_response_code(200);
+http_response_code(204);
 
 
 ?>
