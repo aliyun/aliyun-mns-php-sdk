@@ -32,7 +32,18 @@ if (!function_exists('getallheaders'))
        {
            if (substr($name, 0, 5) == 'HTTP_')
            {
-               $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+               if (substr($name, 5, 11) == 'CONTENT_MD5')
+               {
+                   $headers['Content-md5'] = $value;
+               }
+               else if (substr($name, 5, 5) == 'X_MNS')
+               {
+                   $headers[str_replace(' ', '-', strtolower(str_replace('_', ' ', substr($name, 5))))] = $value;
+               }
+               else
+               {
+                   $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+               }
            }
        }
        return $headers;
