@@ -32,7 +32,18 @@ if (!function_exists('getallheaders'))
        {
            if (substr($name, 0, 5) == 'HTTP_')
            {
-               $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+               if (substr($name, 5, 11) == 'CONTENT_MD5')
+               {
+                   $headers['Content-md5'] = $value;
+               }
+               else if (substr($name, 5, 5) == 'X_MNS')
+               {
+                   $headers[str_replace(' ', '-', strtolower(str_replace('_', ' ', substr($name, 5))))] = $value;
+               }
+               else
+               {
+                   $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+               }
            }
        }
        return $headers;
@@ -84,7 +95,7 @@ $pass = verify($stringToSign, $signature, $publicKey);
 if (!$pass)
 {
     error_log("verify signature fail");
-    http_response_code(400);
+    http_response_code(403);
     return;
 }
 
@@ -95,7 +106,7 @@ error_log($content);
 if (!empty($contentMd5) && $contentMd5 != base64_encode(md5($content)))
 {
     error_log("md5 mismatch");
-    http_response_code(401);
+    http_response_code(500);
     return;
 }
 
@@ -107,7 +118,7 @@ echo "MessageId: " . $msg->MessageId . "\n";
 echo "MessageMD5: " . $msg->MessageMD5 . "\n";
 echo "Message: " . $msg->Message . "\n";
 echo "______________________________________________________\n";
-http_response_code(200);
+http_response_code(204);
 
 
 ?>
