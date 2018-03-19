@@ -1,0 +1,22 @@
+{
+  "name": "aliyuncs/mns-sdk-php",
+  "description": "Aliyun OSS SDK for PHP",
+  "homepage": "http://www.aliyun.com/product/mns/",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Aliyuncs",
+      "homepage": "http://www.aliyun.com"
+    }
+  ],
+  "require": {
+    "php":">=5.6",
+    "psr/http-message":"^1.0.1",
+    "guzzlehttp/guzzle":"^6.3.0"
+  },
+  "minimum-stability": "stable",
+  "autoload": {
+    "psr-4": {"AliyunMNS\\": "AliyunMNS"}
+  }
+}
