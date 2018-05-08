@@ -62,7 +62,7 @@ class BatchSendMessageResponse extends BaseResponse
                 if ($xmlReader->nodeType == \XMLReader::ELEMENT) {
                     switch ($xmlReader->name) {
                     case Constants::ERROR:
-                        $this->parseNormalErrorResponse($xmlReader);
+                        $this->parseNormalErrorResponse($statusCode, $exception, $xmlReader);
                         break;
                     default: // case Constants::Messages
                         $this->parseBatchSendErrorResponse($xmlReader);
@@ -95,22 +95,22 @@ class BatchSendMessageResponse extends BaseResponse
         throw $ex;
     }
 
-    private function parseNormalErrorResponse($xmlReader)
+    private function parseNormalErrorResponse($statusCode, $exception, $xmlReader)
     {
         $result = XMLParser::parseNormalError($xmlReader);
         if ($result['Code'] == Constants::QUEUE_NOT_EXIST)
         {
-            throw new QueueNotExistException($this->statusCode, $result['Message'], $this->exception, $result['Code'], $result['RequestId'], $result['HostId']);
+            throw new QueueNotExistException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
         }
         if ($result['Code'] == Constants::INVALID_ARGUMENT)
         {
-            throw new InvalidArgumentException($this->statusCode, $result['Message'], $this->exception, $result['Code'], $result['RequestId'], $result['HostId']);
+            throw new InvalidArgumentException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
         }
         if ($result['Code'] == Constants::MALFORMED_XML)
         {
-            throw new MalformedXMLException($this->statusCode, $result['Message'], $this->exception, $result['Code'], $result['RequestId'], $result['HostId']);
+            throw new MalformedXMLException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
         }
-        throw new MnsException($this->statusCode, $result['Message'], $this->exception, $result['Code'], $result['RequestId'], $result['HostId']);
+        throw new MnsException($statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
     }
 }
 
