@@ -100,17 +100,17 @@ class BatchSendMessageResponse extends BaseResponse
         $result = XMLParser::parseNormalError($xmlReader);
         if ($result['Code'] == Constants::QUEUE_NOT_EXIST)
         {
-            throw new QueueNotExistException($this->statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
+            throw new QueueNotExistException($this->statusCode, $result['Message'], $this->exception, $result['Code'], $result['RequestId'], $result['HostId']);
         }
         if ($result['Code'] == Constants::INVALID_ARGUMENT)
         {
-            throw new InvalidArgumentException($this->statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
+            throw new InvalidArgumentException($this->statusCode, $result['Message'], $this->exception, $result['Code'], $result['RequestId'], $result['HostId']);
         }
         if ($result['Code'] == Constants::MALFORMED_XML)
         {
-            throw new MalformedXMLException($this->statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
+            throw new MalformedXMLException($this->statusCode, $result['Message'], $this->exception, $result['Code'], $result['RequestId'], $result['HostId']);
         }
-        throw new MnsException($this->statusCode, $result['Message'], $exception, $result['Code'], $result['RequestId'], $result['HostId']);
+        throw new MnsException($this->statusCode, $result['Message'], $this->exception, $result['Code'], $result['RequestId'], $result['HostId']);
     }
 }
 
