@@ -1,5 +1,5 @@
 <?php
-require_once(dirname(dirname(__FILE__)).'/mns-autoloader.php');
+require_once(dirname(dirname(__FILE__)) . '/autoload.php');
 
 use AliyunMNS\Client;
 use AliyunMNS\Topic;
