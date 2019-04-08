@@ -24,12 +24,12 @@ abstract class BaseResponse
         $xmlReader = new \XMLReader();
         $isXml = $xmlReader->XML($content);
         if ($isXml === FALSE) {
-            throw new MnsException($statusCode, $content);
+            throw new MnsException($this->statusCode, $content);
         }
         try {
             while ($xmlReader->read()) {}
         } catch (\Exception $e) {
-            throw new MnsException($statusCode, $content);
+            throw new MnsException($this->statusCode, $content);
         }
         $xmlReader->XML($content);
         return $xmlReader;

@@ -53,7 +53,7 @@ trait MessagePropertiesForSend
         {
             $xmlWriter->writeElement(Constants::DELAY_SECONDS, $this->delaySeconds);
         }
-        if ($this->priority != NULL)
+        if ($this->priority !== NULL)
         {
             $xmlWriter->writeElement(Constants::PRIORITY, $this->priority);
         }
