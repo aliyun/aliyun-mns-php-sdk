@@ -83,7 +83,7 @@ class BatchSmsAttributes
             }
             if (!empty($this->smsParams))
             {
-                $jsonArray[Constants::SMS_PARAMS] = json_encode($this->smsParams);
+                $jsonArray[Constants::SMS_PARAMS] = json_encode($this->smsParams, JSON_FORCE_OBJECT);
             }
         }
 

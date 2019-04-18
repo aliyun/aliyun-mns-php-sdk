@@ -81,16 +81,13 @@ class SmsAttributes
             $jsonArray[Constants::RECEIVER] = $this->receiver;
         }
 
-        if ($this->smsParams != null)
+        if ($this->smsParams !== null)
         {
             if (!is_array($this->smsParams))
             {
                 throw new MnsException(400, "SmsParams should be an array!");
             }
-            if (!empty($this->smsParams))
-            {
-                $jsonArray[Constants::SMS_PARAMS] = json_encode($this->smsParams);
-            }
+            $jsonArray[Constants::SMS_PARAMS] = json_encode($this->smsParams, JSON_FORCE_OBJECT);
         }
 
         if (!empty($jsonArray))
