@@ -4,7 +4,11 @@
     "description": "Aliyun Message and Notification Service SDK for PHP, PHP>=5.5.0",
     "keywords": ["Aliyun", "mns", "MNS", "Message", "Message Service", "Notification"],
     "homepage": "https://github.com/aliyun/aliyun-mns-php-sdk",
-    "license": "",
+    "license": "MIT",
+    "authors" : [{
+		"name" : "Aliyun MNS Team",
+		"homepage" : "http://www.aliyun.com/product/mns"
+	}],
     "require": {
         "php": ">=5.5.0",
         "psr/http-message": "^1.0",
