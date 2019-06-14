@@ -43,6 +43,8 @@ class Constants
     const ENDPOINT = "Endpoint";
     const STRATEGY = "NotifyStrategy";
     const CONTENT_FORMAT = "NotifyContentFormat";
+    const FILTER_TAG = "FilterTag";
+    const MESSAGE_TAG = "MessageTag";
     const LOGGING_BUCKET = "LoggingBucket";
     const LOGGING_ENABLED = "LoggingEnabled";
     const MESSAGE_ATTRIBUTES = "MessageAttributes";

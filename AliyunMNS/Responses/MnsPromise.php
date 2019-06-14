@@ -41,7 +41,7 @@ class MnsPromise
             if ($e->hasResponse()) {
                 $message = $e->getResponse()->getBody();
             }
-            $this->response->parseErrorResponse($e->getCode(), $message);
+            throw new MnsException($e->getCode(), $message);
         }
         return $this->response;
     }
