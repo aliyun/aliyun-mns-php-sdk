@@ -168,7 +168,7 @@ $region = "";
 $accountId ="";
 $accessId = "";
 $accessKey = "";
-$endPoint = "";s
+$endPoint = "";
 
 if (empty($region)||empty($accessId) || empty($accessKey) || empty($endPoint))
 {
