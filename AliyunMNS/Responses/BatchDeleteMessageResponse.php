@@ -38,7 +38,7 @@ class BatchDeleteMessageResponse extends BaseResponse
                 if ($xmlReader->nodeType == \XMLReader::ELEMENT) {
                     switch ($xmlReader->name) {
                     case Constants::ERROR:
-                        $this->parseNormalErrorResponse($xmlReader);
+                        $this->parseNormalErrorResponse($statusCode, $exception, $xmlReader);
                         break;
                     default: // case Constants::Messages
                         $this->parseBatchDeleteErrorResponse($xmlReader);
@@ -71,7 +71,7 @@ class BatchDeleteMessageResponse extends BaseResponse
         throw $ex;
     }
 
-    private function parseNormalErrorResponse($xmlReader)
+    private function parseNormalErrorResponse($statusCode, $exception, $xmlReader)
     {
         $result = XMLParser::parseNormalError($xmlReader);
 
