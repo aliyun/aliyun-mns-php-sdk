@@ -73,20 +73,27 @@ if (array_key_exists('Content-Type', $headers))
 }
 $date = $headers['Date'];
 
-$stringToSign = strtoupper($method) . "\n" . $contentMd5 . "\n" . $contentType . "\n" . $date . "\n" . $canonicalizedMNSHeaders . "\n" . $canonicalizedResource;
-error_log($stringToSign);
-
-$publicKeyURL = base64_decode($headers['x-mns-signing-cert-url']);
-$publicKey = get_by_url($publicKeyURL);
-$signature = $headers['Authorization'];
-
-$pass = verify($stringToSign, $signature, $publicKey);
-if (!$pass)
-{
-    error_log("verify signature fail");
-    http_response_code(400);
-    return;
-}
+###########################################################################################################################################################
+#!!!NOTICE : Verifying request by \'Authorization\' header provided by mns is not a perfet solution, you can design own verification mechanism between producer and http endpoint. 
+#
+##########################################################################################################################################################
+#
+#$stringToSign = strtoupper($method) . "\n" . $contentMd5 . "\n" . $contentType . "\n" . $date . "\n" . $canonicalizedMNSHeaders . "\n" . $canonicalizedResource;
+#error_log($stringToSign);
+#
+#$publicKeyURL = base64_decode($headers['x-mns-signing-cert-url']);
+#$publicKey = get_by_url($publicKeyURL);
+#$signature = $headers['Authorization'];
+#
+#$pass = verify($stringToSign, $signature, $publicKey);
+#if (!$pass)
+#{
+#    error_log("verify signature fail");
+#    http_response_code(400);
+#    return;
+#}
+#
+##########################################################################################################################################################
 
 // 2. now parse the content
 $content = file_get_contents("php://input");
