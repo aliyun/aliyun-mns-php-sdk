@@ -62,7 +62,7 @@ class BatchSendMessageResponse extends BaseResponse
                 if ($xmlReader->nodeType == \XMLReader::ELEMENT) {
                     switch ($xmlReader->name) {
                     case Constants::ERROR:
-                        $this->parseNormalErrorResponse($xmlReader);
+                        $this->parseNormalErrorResponse($xmlReader, $statusCode, $exception);
                         break;
                     default: // case Constants::Messages
                         $this->parseBatchSendErrorResponse($xmlReader);
@@ -95,7 +95,7 @@ class BatchSendMessageResponse extends BaseResponse
         throw $ex;
     }
 
-    private function parseNormalErrorResponse($xmlReader)
+    private function parseNormalErrorResponse($xmlReader, $statusCode, $exception)
     {
         $result = XMLParser::parseNormalError($xmlReader);
         if ($result['Code'] == Constants::QUEUE_NOT_EXIST)
