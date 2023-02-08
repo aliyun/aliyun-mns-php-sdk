@@ -46,8 +46,7 @@ class HttpClient
         $this->requestTimeout = $config->getRequestTimeout();
         $this->connectTimeout = $config->getConnectTimeout();
         $this->securityToken = $securityToken;
-        $this->endpoint = $endPoint;
-        $this->parseEndpoint();
+        $this->parseEndpoint($endPoint);
     }
 
     public function getRegion()
@@ -61,9 +60,9 @@ class HttpClient
     }
 
     // This function is for SDK internal use
-    private function parseEndpoint()
+    private function parseEndpoint($endPoint)
     {
-        $pieces = explode("//", $this->endpoint);
+        $pieces = explode("//", $endPoint);
         $host = end($pieces);
 
         $host_pieces = explode(".", $host);
