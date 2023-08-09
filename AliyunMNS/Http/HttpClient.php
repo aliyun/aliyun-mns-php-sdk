@@ -1,4 +1,5 @@
 <?php
+
 namespace AliyunMNS\Http;
 
 use AliyunMNS\Config;
@@ -24,11 +25,14 @@ class HttpClient
     private $requestTimeout;
     private $connectTimeout;
 
-    public function __construct($endPoint, $accessId,
-        $accessKey, $securityToken = NULL, Config $config = NULL)
-    {
-        if ($config == NULL)
-        {
+    public function __construct(
+        $endPoint,
+        $accessId,
+        $accessKey,
+        $securityToken = NULL,
+        Config $config = NULL
+    ) {
+        if ($config == NULL) {
             $config = new Config;
         }
         $this->accessId = $accessId;
@@ -80,30 +84,31 @@ class HttpClient
         $request->setBody($body);
         $request->setQueryString($queryString);
 
-        if ($body != NULL)
-        {
+        if ($body != NULL) {
             $request->setHeader(Constants::CONTENT_LENGTH, strlen($body));
         }
         $request->setHeader('Date', gmdate(Constants::GMT_DATE_FORMAT));
-        if (!$request->isHeaderSet(Constants::CONTENT_TYPE))
-        {
+        if (!$request->isHeaderSet(Constants::CONTENT_TYPE)) {
             $request->setHeader(Constants::CONTENT_TYPE, 'text/xml');
         }
         $request->setHeader(Constants::MNS_VERSION_HEADER, Constants::MNS_VERSION);
 
-        if ($this->securityToken != NULL)
-        {
+        if ($this->securityToken != NULL) {
             $request->setHeader(Constants::SECURITY_TOKEN, $this->securityToken);
         }
 
         $sign = Signature::SignRequest($this->accessKey, $request);
-        $request->setHeader(Constants::AUTHORIZATION,
-            Constants::MNS . " " . $this->accessId . ":" . $sign);
+        $request->setHeader(
+            Constants::AUTHORIZATION,
+            Constants::MNS . " " . $this->accessId . ":" . $sign
+        );
     }
 
-    public function sendRequestAsync(BaseRequest $request,
-        BaseResponse &$response, AsyncCallback $callback = NULL)
-    {
+    public function sendRequestAsync(
+        BaseRequest $request,
+        BaseResponse &$response,
+        AsyncCallback $callback = NULL
+    ) {
         $promise = $this->sendRequestAsyncInternal($request, $response, $callback);
         return new MnsPromise($promise, $response);
     }
@@ -131,12 +136,14 @@ class HttpClient
         $parameters['timeout'] = $this->requestTimeout;
         $parameters['connect_timeout'] = $this->connectTimeout;
 
-        $request = new Request(strtoupper($request->getMethod()),
-            $request->getResourcePath(), $request->getHeaders());
-        try
-        {
-            if ($callback != NULL)
-            {
+        $request = new Request(
+            strtoupper($request->getMethod()),
+            $request->getResourcePath(),
+            $request->getHeaders()
+        );
+
+        try {
+            if ($callback != NULL) {
                 return $this->client->sendAsync($request, $parameters)->then(
                     function ($res) use (&$response, $callback) {
                         try {
@@ -148,20 +155,14 @@ class HttpClient
                     }
                 );
             }
-            else
-            {
-                return $this->client->sendAsync($request, $parameters);
-            }
-        }
-        catch (TransferException $e)
-        {
-            $message = $e->getMessage();
-            if ($e->hasResponse()) {
-                $message = $e->getResponse()->getBody();
-            }
+
+            return $this->client->sendAsync($request, $parameters);
+        } catch (TransferException $e) {
+            $message = method_exists($e, 'hasResponse') && $e->hasResponse()
+                ? $e->getResponse()->getBody()->__toString()
+                : $e->getMessage();
+
             throw new MnsException($e->getCode(), $message, $e);
         }
     }
 }
-
-?>

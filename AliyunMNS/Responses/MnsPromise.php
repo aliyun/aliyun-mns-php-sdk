@@ -1,4 +1,5 @@
 <?php
+
 namespace AliyunMNS\Responses;
 
 use GuzzleHttp\Promise\PromiseInterface;
@@ -32,19 +33,18 @@ class MnsPromise
     {
         try {
             $res = $this->promise->wait();
-            if ($res instanceof ResponseInterface)
-            {
+
+            if ($res instanceof ResponseInterface) {
                 $this->response->parseResponse($res->getStatusCode(), $res->getBody());
             }
         } catch (TransferException $e) {
-            $message = $e->getMessage();
-            if ($e->hasResponse()) {
-                $message = $e->getResponse()->getBody();
-            }
-            throw new MnsException($e->getCode(), $message);
+            $message = method_exists($e, 'hasResponse') && $e->hasResponse()
+                ? $e->getResponse()->getBody()->__toString()
+                : $e->getMessage();
+
+            throw new MnsException($e->getCode(), $message, $e);
         }
+
         return $this->response;
     }
 }
-
-?>
