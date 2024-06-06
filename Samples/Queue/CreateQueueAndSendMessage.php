@@ -3,10 +3,7 @@
 require_once __DIR__ . '/../Common.php';
 
 use AliyunMNS\Client;
-<<<<<<< HEAD
 use AliyunMNS\Constants;
-=======
->>>>>>> 564fb7f (refactor(sample): refactor samples to add new feature usages)
 use AliyunMNS\Model\SendMessageRequestItem;
 use AliyunMNS\Requests\BatchReceiveMessageRequest;
 use AliyunMNS\Requests\SendMessageRequest;

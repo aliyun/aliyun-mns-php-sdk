@@ -266,7 +266,7 @@ class TopicTest extends PHPUnitBase
 
             $mailAttributes = new MailAttributes("TestSubject", "TestAccountName");
             $messageAttributes = new MessageAttributes($mailAttributes);
-            $request = new PublishMessageRequest($messageBody, NULL, $messageAttributes);
+            $request = new PublishMessageRequest($messageBody,NULL, $messageAttributes);
 
             $res = $topic->publishMessage($request);
             $this->assertTrue($res->isSucceed());
