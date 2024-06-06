@@ -76,7 +76,7 @@ class TopicTest extends \PHPUnit_Framework_TestCase
     {
         try
         {
-            $attributes = new SubscriptionAttributes($subscriptionName, 'http://127.0.0.1', 'BACKOFF_RETRY', 'XML');
+            $attributes = new SubscriptionAttributes($subscriptionName, 'https://www.baidu.com/', 'BACKOFF_RETRY', 'XML');
             $topic->subscribe($attributes);
         }
         catch (MnsException $e)
@@ -232,7 +232,7 @@ class TopicTest extends \PHPUnit_Framework_TestCase
             $batchSmsAttributes = new BatchSmsAttributes("陈舟锋", "SMS_15535414");
             $batchSmsAttributes->addReceiver("13735576932", array("name" => "phpsdk-batchsms"));
             $messageAttributes = new MessageAttributes(array($batchSmsAttributes));
-            $request = new PublishMessageRequest($messageBody, $messageAttributes);
+            $request = new PublishMessageRequest($messageBody, NULL, $messageAttributes);
 
             $res = $topic->publishMessage($request);
             $this->assertTrue($res->isSucceed());
@@ -268,7 +268,7 @@ class TopicTest extends \PHPUnit_Framework_TestCase
             $smsParams = array("name" => "phpsdk");
             $smsAttributes = new SmsAttributes("陈舟锋", "SMS_15535414", $smsParams, "13735576932");
             $messageAttributes = new MessageAttributes($smsAttributes);
-            $request = new PublishMessageRequest($messageBody, $messageAttributes);
+            $request = new PublishMessageRequest($messageBody, NULL, $messageAttributes);
 
             $res = $topic->publishMessage($request);
             $this->assertTrue($res->isSucceed());
@@ -303,7 +303,7 @@ class TopicTest extends \PHPUnit_Framework_TestCase
 
             $mailAttributes = new MailAttributes("TestSubject", "TestAccountName");
             $messageAttributes = new MessageAttributes($mailAttributes);
-            $request = new PublishMessageRequest($messageBody, $messageAttributes);
+            $request = new PublishMessageRequest($messageBody,NULL, $messageAttributes);
 
             $res = $topic->publishMessage($request);
             $this->assertTrue($res->isSucceed());
@@ -369,7 +369,7 @@ class TopicTest extends \PHPUnit_Framework_TestCase
         $topic = $this->prepareTopic($topicName);
 
         $subscriptionName = 'testSubscribeSubscription' . uniqid();
-        $attributes = new SubscriptionAttributes($subscriptionName, 'http://127.0.0.1', 'BACKOFF_RETRY', 'XML');
+        $attributes = new SubscriptionAttributes($subscriptionName, 'https://www.baidu.com/', 'BACKOFF_RETRY', 'XML');
         try
         {
             $topic->subscribe($attributes);
