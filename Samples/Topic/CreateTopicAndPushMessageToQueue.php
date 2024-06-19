@@ -1,6 +1,9 @@
 <?php
 
+require_once __DIR__ . '/../Common.php';
+
 use AliyunMNS\Client;
+use AliyunMNS\Constants;
 use AliyunMNS\Exception\MessageNotExistException;
 use AliyunMNS\Model\SubscriptionAttributes;
 use AliyunMNS\Requests\PublishBase64MessageRequest;
@@ -132,12 +135,18 @@ class CreateTopicAndPushMessageToQueue
     }
 }
 
-$accessId = "";
-$accessKey = "";
+$accessId = getenv(Constants::ALIYUN_AK_ENV_KEY);
+$accessKey = getenv(Constants::ALIYUN_SK_ENV_KEY);
 $endPoint = "";
 
-if (empty($accessId) || empty($accessKey) || empty($endPoint)) {
-    echo "Must Provide AccessId/AccessKey/EndPoint to Run the Example. \n";
+if (empty($accessId) || empty($accessKey))
+{
+    echo "Must Set AccessId/AccessKey In Env to Run the Example. \n";
+    return;
+}
+
+if (empty($endPoint)) {
+    echo "Must Provide EndPoint to Run the Example. \n";
     return;
 }
 

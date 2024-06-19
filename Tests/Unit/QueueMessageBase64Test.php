@@ -2,13 +2,12 @@
 
 namespace Unit;
 
+require_once __DIR__ . "/../Compatibility.php";
+
 use AliyunMNS\Requests\SendMessageRequest;
 use AliyunMNS\Responses\ReceiveMessageResponse;
 
-if (!class_exists('\PHPUnit_Framework_TestCase') && class_exists('\PHPUnit\Framework\TestCase'))
-    class_alias('\PHPUnit\Framework\TestCase', '\PHPUnit_Framework_TestCase');
-
-class TestQueueMessageBase64 extends \PHPUnit_Framework_TestCase
+class QueueMessageBase64Test extends \PHPUnit_Framework_TestCase
 {
     public function testRawStringMessage()
     {

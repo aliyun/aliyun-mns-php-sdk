@@ -1,6 +1,9 @@
 <?php
 
+require_once __DIR__ . '/../Common.php';
+
 use AliyunMNS\Client;
+use AliyunMNS\Constants;
 use AliyunMNS\Model\SendMessageRequestItem;
 use AliyunMNS\Requests\BatchReceiveMessageRequest;
 use AliyunMNS\Requests\SendMessageRequest;
@@ -194,13 +197,18 @@ class CreateQueueAndSendMessage
     }
 }
 
-$accessId = "";
-$accessKey = "";
+$accessId = getenv(Constants::ALIYUN_AK_ENV_KEY);
+$accessKey = getenv(Constants::ALIYUN_SK_ENV_KEY);
 $endPoint = "";
 
-if (empty($accessId) || empty($accessKey) || empty($endPoint))
+if (empty($accessId) || empty($accessKey))
 {
-    echo "Must Provide AccessId/AccessKey/EndPoint to Run the Example. \n";
+    echo "Must Set AccessId/AccessKey In Env to Run the Example. \n";
+    return;
+}
+
+if (empty($endPoint)) {
+    echo "Must Provide EndPoint to Run the Example. \n";
     return;
 }
 
