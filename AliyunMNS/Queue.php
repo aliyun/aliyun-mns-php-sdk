@@ -146,6 +146,7 @@ class Queue
 
         $request->setQueueName($this->queueName);
         $request->setBase64($this->base64);
+        $request->setUserProperties($param->getUserProperties());
         $response = new SendMessageResponse();
         return $this->client->sendRequest($request, $response);
     }

@@ -3,10 +3,12 @@ namespace AliyunMNS\Model;
 
 use AliyunMNS\Constants;
 use AliyunMNS\Traits\MessagePropertiesForReceive;
+use AliyunMNS\Traits\MessageUserProperties;
 
 class Message
 {
     use MessagePropertiesForReceive;
+    use MessageUserProperties;
 
     public function __construct($messageId, $messageBodyMD5, $messageBody, $enqueueTime, $nextVisibleTime, $firstDequeueTime, $dequeueCount, $priority, $receiptHandle)
     {
@@ -32,6 +34,7 @@ class Message
         $dequeueCount = NULL;
         $priority = NULL;
         $receiptHandle = NULL;
+        $userProperties = [];
 
         while ($xmlReader->read())
         {
@@ -106,6 +109,9 @@ class Message
                         $receiptHandle = $xmlReader->value;
                     }
                     break;
+                case Constants::USER_PROPERTIES:
+                    $userProperties = self::parseUserPropertiesFromXML($xmlReader);
+                    break;
                 }
                 break;
             case \XMLReader::END_ELEMENT:
@@ -121,6 +127,7 @@ class Message
                         $dequeueCount,
                         $priority,
                         $receiptHandle);
+                        $message->setUserProperties($userProperties);
                     return $message;
                 }
                 break;
@@ -137,6 +144,7 @@ class Message
             $dequeueCount,
             $priority,
             $receiptHandle);
+            $message->setUserProperties($userProperties);
 
         return $message;
     }

@@ -5,6 +5,8 @@ use AliyunMNS\Constants;
 
 trait MessagePropertiesForSend
 {
+    use MessageUserProperties;
+    
     protected $messageBody;
     protected $delaySeconds;
     protected $priority;

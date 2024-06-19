@@ -27,6 +27,7 @@ trait MessagePropertiesForReceive
         $this->dequeueCount = $message->getDequeueCount();
         $this->priority = $message->getPriority();
         $this->receiptHandle = $message->getReceiptHandle();
+        $this->userProperties = $message->getUserProperties();
     }
 }
 

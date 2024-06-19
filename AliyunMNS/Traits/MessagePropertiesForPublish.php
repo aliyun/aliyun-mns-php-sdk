@@ -6,6 +6,8 @@ use AliyunMNS\Model\MessageAttributes;
 
 trait MessagePropertiesForPublish
 {
+    use MessageUserProperties;
+
     public $messageBody;
     public $messageAttributes;
     public $messageTag;

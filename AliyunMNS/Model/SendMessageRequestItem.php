@@ -3,6 +3,7 @@ namespace AliyunMNS\Model;
 
 use AliyunMNS\Constants;
 use AliyunMNS\Traits\MessagePropertiesForSend;
+use AliyunMNS\Traits\MessageUserProperties;
 
 /**
  * this class is recommended for sendMessage and batchSendMessage.
@@ -10,6 +11,7 @@ use AliyunMNS\Traits\MessagePropertiesForSend;
 class SendMessageRequestItem
 {
     use MessagePropertiesForSend;
+    use MessageUserProperties;
 
     public function __construct($messageBody, $delaySeconds = NULL, $priority = NULL)
     {
@@ -22,6 +24,7 @@ class SendMessageRequestItem
     {
         $xmlWriter->startELement('Message');
         $this->writeMessagePropertiesForSendXML($xmlWriter, $base64);
+        $this->writeXMLForUserProperties($xmlWriter);
         $xmlWriter->endElement();
     }
 }

@@ -11,6 +11,8 @@ use AliyunMNS\Requests\PublishMessageRequest;
 use AliyunMNS\Requests\CreateTopicRequest;
 use AliyunMNS\Requests\CreateQueueRequest;
 use AliyunMNS\Exception\MnsException;
+use AliyunMNS\Model\MessagePropertyValue;
+use AliyunMNS\Model\PropertyType;
 
 class CreateTopicAndPushMessageToQueue
 {
@@ -71,7 +73,12 @@ class CreateTopicAndPushMessageToQueue
         // publish raw string message
         $request = new PublishMessageRequest($messageBody);
         try {
-            $res = $topic->publishMessage($request);
+        // 使用关联数组设置用户属性
+        // $userProperties = [
+        //     "test-suha1" => new MessagePropertyValue(PropertyType::STRING, null, "test")
+        // ];
+        // $request->setUserProperties($userProperties);
+            // $res = $topic->publishMessage($request);
             echo "RawMessagePublished! \n";
         } catch (MnsException $e) {
             echo "PublishRawMessage Failed: " . $e;
@@ -81,6 +88,11 @@ class CreateTopicAndPushMessageToQueue
         // publish base64 encoded message
         $request = new PublishBase64MessageRequest($messageBody);
         try {
+        // 使用关联数组设置用户属性
+        $userProperties = [
+            "test-suha1" => new MessagePropertyValue(PropertyType::STRING, null, "test")
+        ];
+        $request->setUserProperties($userProperties);
             $res = $topic->publishMessage($request);
             echo "Base64MessagePublished! \n";
         } catch (MnsException $e) {
@@ -96,6 +108,25 @@ class CreateTopicAndPushMessageToQueue
                 $res = $queue->receiveMessage(3);
                 echo "Receive Message success, MessageBody: " . $res->getMessageBody() . "\n";
                 $receiptHandle = $res->getReceiptHandle();
+
+                $userPropertiesRes = $res->getUserProperties();
+                if ($userPropertiesRes != NULL) {
+                    echo "UserProperties: \n";
+                    foreach ($userPropertiesRes as $key => $value)
+                        if ($value instanceof MessagePropertyValue) {
+                            $dataType = $value->getDataType();
+                            if ($dataType === PropertyType::STRING) {
+                                echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
+                            } elseif ($dataType === PropertyType::BINARY) {
+                                echo "Key: " . $key . ", Value: [binary data] (Base64: " . base64_encode($value->getBinaryValue()) . ")\n";
+                            } else {
+                                echo "Key: " . $key . ", Value: [unknown type]\n";
+                            }
+                        } else {
+                            echo "Key: " . $key . ", Value: " . $value . "\n";
+                        }
+                }
+
                 $queue->deleteMessage($receiptHandle);
                 echo "DeleteMessage Succeed! \n";
                 break;
