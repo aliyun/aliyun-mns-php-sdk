@@ -1,6 +1,7 @@
 <?php
 
-use AliyunMNS\Client;
+require_once __DIR__ . '/Compatibility.php';
+
 use AliyunMNS\Constants;
 use AliyunMNS\AsyncCallback;
 use AliyunMNS\Model\QueueAttributes;
@@ -11,51 +12,9 @@ use AliyunMNS\Requests\CreateQueueRequest;
 use AliyunMNS\Requests\CreateTopicRequest;
 use AliyunMNS\Requests\ListQueueRequest;
 use AliyunMNS\Requests\ListTopicRequest;
-use AliyunMNS\Requests\SetAccountAttributesRequest;
-use AliyunMNS\Requests\GetAccountAttributesRequest;
 
-class ClientTest extends \PHPUnit_Framework_TestCase
+class ClientTest extends PHPUnitBase
 {
-    private $accessId;
-    private $accessKey;
-    private $endPoint;
-    private $client;
-
-    private $queueToDelete;
-    private $topicToDelete;
-
-    public function setUp()
-    {
-        $ini_array = parse_ini_file(__DIR__ . "/aliyun-mns.ini");
-
-        $this->endPoint = $ini_array["endpoint"];
-        $this->accessId = $ini_array["accessid"];
-        $this->accessKey = $ini_array["accesskey"];
-
-        $this->queueToDelete = array();
-        $this->topicToDelete = array();
-
-        $this->client = new Client($this->endPoint, $this->accessId, $this->accessKey);
-    }
-
-    public function tearDown()
-    {
-        foreach ($this->queueToDelete as $queueName)
-        {
-            try {
-                $this->client->deleteQueue($queueName);
-            } catch (\Exception $e) {
-            }
-        }
-        foreach ($this->topicToDelete as $topicName)
-        {
-            try {
-                $this->client->deleteTopic($topicName);
-            } catch (\Exception $e) {
-            }
-        }
-    }
-
     public function testAccountAttributes()
     {
         try

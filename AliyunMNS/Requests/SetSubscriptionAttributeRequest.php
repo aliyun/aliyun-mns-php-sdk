@@ -8,6 +8,8 @@ use AliyunMNS\Model\UpdateSubscriptionAttributes;
 class SetSubscriptionAttributeRequest extends BaseRequest
 {
 
+    private $attributes;
+
     public function __construct(UpdateSubscriptionAttributes $attributes = NULL)
     {
         parent::__construct('put', 'topics/' . $attributes->getTopicName() . '/subscriptions/' . $attributes->getSubscriptionName() . '?metaoverride=true');

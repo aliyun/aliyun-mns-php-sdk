@@ -22,6 +22,9 @@ class BatchSendMessageRequest extends BaseRequest
         $this->base64 = $base64;
     }
 
+    /**
+     * @internal internal method, not for public use.
+     */
     public function setBase64($base64)
     {
         $this->base64 = $base64;

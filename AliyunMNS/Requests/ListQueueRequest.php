@@ -43,7 +43,7 @@ class ListQueueRequest extends BaseRequest
 
     public function setPrefix($prefix)
     {
-        $this->prefis = $prefix;
+        $this->prefix = $prefix;
         if ($prefix != NULL)
         {
             $this->setHeader("x-mns-prefix", $prefix);

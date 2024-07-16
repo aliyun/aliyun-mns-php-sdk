@@ -1,9 +1,11 @@
 <?php
 namespace AliyunMNS;
 
+use AliyunMNS\Exception\InvalidArgumentException;
 use AliyunMNS\Http\HttpClient;
 use AliyunMNS\AsyncCallback;
 use AliyunMNS\Model\QueueAttributes;
+use AliyunMNS\Model\SendMessageRequestItem;
 use AliyunMNS\Requests\SetQueueAttributeRequest;
 use AliyunMNS\Responses\SetQueueAttributeResponse;
 use AliyunMNS\Requests\GetQueueAttributeRequest;
@@ -112,10 +114,16 @@ class Queue
      *     If you do not need the message body to be encoded in Base64,
      *     please specify the $base64 = FALSE in Queue
      *
+     * Accepts two types of argument.
+     * 1. SendMessageRequest. (Not recommended)
+     *
+     * 2. SendMessageRequestItem. (Recommended)
+     *
+     * If you use the first type of argument, the base64 you set for SendMessageRequest is invalid,
+     * please set the base64 in Queue.
+     *
      * detail API sepcs:
      * https://docs.aliyun.com/?spm=#/pub/mns/api_reference/api_spec&message_operation
-     *
-     * @param SendMessageRequest: containing the message body and properties
      *
      * @return SendMessageResponse: containing the messageId and bodyMD5
      *
@@ -124,17 +132,37 @@ class Queue
      * @throws MalformedXMLException if any error in xml
      * @throws MnsException if any other exception happends
      */
-    public function sendMessage(SendMessageRequest $request)
+    public function sendMessage($param)
     {
+        $request = NULL;
+        if ($param instanceof SendMessageRequest){
+            $request = $param;
+        } elseif ($param instanceof SendMessageRequestItem) {
+            $request = new SendMessageRequest($param->getMessageBody(), $param->getDelaySeconds(), $param->getPriority());
+        } else {
+            throw new InvalidArgumentException(Constants::INVALID_ARGUMENT,
+                "The parameter must be SendMessageRequest or SendMessageRequestItem.");
+        }
+
         $request->setQueueName($this->queueName);
         $request->setBase64($this->base64);
         $response = new SendMessageResponse();
         return $this->client->sendRequest($request, $response);
     }
 
-    public function sendMessageAsync(SendMessageRequest $request,
+    public function sendMessageAsync($param,
         AsyncCallback $callback = NULL)
     {
+        $request = NULL;
+        if ($param instanceof SendMessageRequest){
+            $request = $param;
+        } elseif ($param instanceof SendMessageRequestItem) {
+            $request = new SendMessageRequest($param->getMessageBody(), $param->getDelaySeconds(), $param->getPriority());
+        } else {
+            throw new InvalidArgumentException(Constants::INVALID_ARGUMENT,
+                "The first parameter must be SendMessageRequest or SendMessageRequestItem.");
+        }
+
         $request->setQueueName($this->queueName);
         $request->setBase64($this->base64);
         $response = new SendMessageResponse();
@@ -252,11 +280,16 @@ class Queue
      *     If you do not need the message body to be encoded in Base64,
      *     please specify the $base64 = FALSE in Queue
      *
+     *  Accepts two types of argument.
+     *  1. BatchSendMessageRequest.(Not recommended)
+     *
+     *  2. array of SendMessageRequestItem. (Recommended)
+     *
+     *  If you use the first type of argument list, the base64 you set for SendMessageRequest is invalid,
+     *  please set the base64 in Queue.
+     *
      * detail API sepcs:
      * https://docs.aliyun.com/?spm=#/pub/mns/api_reference/api_spec&message_operation
-     *
-     * @param BatchSendMessageRequest:
-     *            the requests containing an array of SendMessageRequestItems
      *
      * @return BatchSendMessageResponse
      *
@@ -266,17 +299,49 @@ class Queue
      * @throws BatchSendFailException if some messages are not sent
      * @throws MnsException if any other exception happends
      */
-    public function batchSendMessage(BatchSendMessageRequest $request)
+    public function batchSendMessage($param)
     {
+        $request = NULL;
+        if ($param instanceof BatchSendMessageRequest) {
+            $request = $param;
+        } else if (is_array($param)) {
+            foreach ($param as $item) {
+                if (!$item instanceof SendMessageRequestItem) {
+                    throw new InvalidArgumentException(Constants::INVALID_ARGUMENT,
+                        "The array must only contain SendMessageRequestItem.");
+                }
+            }
+            $request = new BatchSendMessageRequest($param);
+        } else {
+            throw new InvalidArgumentException(Constants::INVALID_ARGUMENT,
+                "The parameter must be BatchSendMessageRequest or array of SendMessageRequestItem.");
+        }
+
         $request->setQueueName($this->queueName);
         $request->setBase64($this->base64);
         $response = new BatchSendMessageResponse();
         return $this->client->sendRequest($request, $response);
     }
 
-    public function batchSendMessageAsync(BatchSendMessageRequest $request,
+    public function batchSendMessageAsync($param,
         AsyncCallback $callback = NULL)
     {
+        $request = NULL;
+        if ($param instanceof BatchSendMessageRequest) {
+            $request = $param;
+        } else if (is_array($param)) {
+            foreach ($param as $item) {
+                if (!$item instanceof SendMessageRequestItem) {
+                    throw new InvalidArgumentException(Constants::INVALID_ARGUMENT,
+                        "The array must only contain SendMessageRequestItem.");
+                }
+            }
+            $request = new BatchSendMessageRequest($param);
+        } else {
+            throw new InvalidArgumentException(Constants::INVALID_ARGUMENT,
+                "The first parameter must be BatchSendMessageRequest or array of SendMessageRequestItem.");
+        }
+
         $request->setQueueName($this->queueName);
         $request->setBase64($this->base64);
         $response = new BatchSendMessageResponse();

@@ -13,6 +13,9 @@ class Constants
     const AUTHORIZATION = "Authorization";
     const MNS = "MNS";
 
+    const ALIYUN_AK_ENV_KEY = "ALIBABA_CLOUD_ACCESS_KEY_ID";
+    const ALIYUN_SK_ENV_KEY = "ALIBABA_CLOUD_ACCESS_KEY_SECRET";
+
     const CONTENT_LENGTH = "Content-Length";
     const CONTENT_TYPE = "Content-Type";
     const SECURITY_TOKEN = "security-token";

@@ -8,6 +8,7 @@ use AliyunMNS\Requests\BaseRequest;
 use AliyunMNS\Responses\BaseResponse;
 use AliyunMNS\Signature\Signature;
 use AliyunMNS\AsyncCallback;
+use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Exception\TransferException;
@@ -23,6 +24,7 @@ class HttpClient
     private $securityToken;
     private $requestTimeout;
     private $connectTimeout;
+    private $endpoint;
 
     public function __construct($endPoint, $accessId,
         $accessKey, $securityToken = NULL, Config $config = NULL)
@@ -41,6 +43,9 @@ class HttpClient
                 ],
                 'proxy' => $config->getProxy(),
                 'expect' => $config->getExpectContinue()
+            ],
+            'headers' => [
+                'user-agent' => self::getUserAgent()
             ]
         ]);
         $this->requestTimeout = $config->getRequestTimeout();
@@ -48,6 +53,17 @@ class HttpClient
         $this->securityToken = $securityToken;
         $this->endpoint = $endPoint;
         $this->parseEndpoint();
+    }
+
+    public static function getUserAgent()
+    {
+        $composerJson = file_get_contents(__DIR__ . '/../../composer.json');
+        $version = json_decode($composerJson, true)['version'];
+
+        $platform = php_uname('s') . '/' . php_uname('r') . '/'
+            . php_uname('m') . ';' . phpversion();
+
+        return 'aliyun-sdk-php' . '/' . $version . '(' . $platform . ')';
     }
 
     public function getRegion()
@@ -156,7 +172,7 @@ class HttpClient
         catch (TransferException $e)
         {
             $message = $e->getMessage();
-            if ($e->hasResponse()) {
+            if ($e instanceof RequestException && $e->hasResponse()) {
                 $message = $e->getResponse()->getBody();
             }
             throw new MnsException($e->getCode(), $message, $e);

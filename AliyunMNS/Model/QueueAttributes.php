@@ -15,7 +15,7 @@ class QueueAttributes
     private $messageRetentionPeriod;
     private $visibilityTimeout;
     private $pollingWaitSeconds;
-    private $LoggingEnabled;
+    private $loggingEnabled;
 
     # the following attributes cannot be changed
     private $queueName;
