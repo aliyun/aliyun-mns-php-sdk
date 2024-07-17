@@ -1,60 +1,23 @@
 <?php
 
-use AliyunMNS\Client;
+require_once __DIR__ . '/Compatibility.php';
+
 use AliyunMNS\Topic;
 use AliyunMNS\Constants;
-use AliyunMNS\AsyncCallback;
 use AliyunMNS\Model\TopicAttributes;
 use AliyunMNS\Model\MailAttributes;
 use AliyunMNS\Model\SmsAttributes;
 use AliyunMNS\Model\BatchSmsAttributes;
-// use AliyunMNS\Model\WebSocketAttributes;
 use AliyunMNS\Model\MessageAttributes;
 use AliyunMNS\Model\SubscriptionAttributes;
 use AliyunMNS\Model\UpdateSubscriptionAttributes;
 use AliyunMNS\Exception\MnsException;
 use AliyunMNS\Requests\CreateQueueRequest;
 use AliyunMNS\Requests\CreateTopicRequest;
-use AliyunMNS\Requests\GetTopicAttributeRequest;
-use AliyunMNS\Requests\SetTopicAttributeRequest;
 use AliyunMNS\Requests\PublishMessageRequest;
 
-class TopicTest extends \PHPUnit_Framework_TestCase
+class TopicTest extends PHPUnitBase
 {
-    private $accessId;
-    private $accessKey;
-    private $endPoint;
-    private $client;
-
-    private $topicToDelete;
-
-    public function setUp()
-    {
-        $ini_array = parse_ini_file(__DIR__ . "/aliyun-mns.ini");
-
-        $this->endPoint = $ini_array["endpoint"];
-        $this->accessId = $ini_array["accessid"];
-        $this->accessKey = $ini_array["accesskey"];
-
-        $this->topicToDelete = array();
-
-        $this->client = new Client($this->endPoint, $this->accessId, $this->accessKey);
-    }
-
-    public function tearDown()
-    {
-        foreach ($this->topicToDelete as $topicName)
-        {
-            try
-            {
-                $this->client->deleteTopic($topicName);
-            }
-            catch (\Exception $e)
-            {
-            }
-        }
-    }
-
     private function prepareTopic($topicName, $attributes = NULL)
     {
         $request = new CreateTopicRequest($topicName, $attributes);
@@ -76,7 +39,7 @@ class TopicTest extends \PHPUnit_Framework_TestCase
     {
         try
         {
-            $attributes = new SubscriptionAttributes($subscriptionName, 'http://127.0.0.1', 'BACKOFF_RETRY', 'XML');
+            $attributes = new SubscriptionAttributes($subscriptionName, 'https://www.baidu.com/', 'BACKOFF_RETRY', 'XML');
             $topic->subscribe($attributes);
         }
         catch (MnsException $e)
@@ -232,12 +195,12 @@ class TopicTest extends \PHPUnit_Framework_TestCase
             $batchSmsAttributes = new BatchSmsAttributes("陈舟锋", "SMS_15535414");
             $batchSmsAttributes->addReceiver("13735576932", array("name" => "phpsdk-batchsms"));
             $messageAttributes = new MessageAttributes(array($batchSmsAttributes));
-            $request = new PublishMessageRequest($messageBody, $messageAttributes);
+            $request = new PublishMessageRequest($messageBody, NULL, $messageAttributes);
 
             $res = $topic->publishMessage($request);
             $this->assertTrue($res->isSucceed());
             $this->assertEquals(strtoupper($bodyMD5), $res->getMessageBodyMD5());
-            echo $res->getMessageId();
+//            echo $res->getMessageId();
             sleep(5);
         }
         catch (MnsException $e)
@@ -268,12 +231,12 @@ class TopicTest extends \PHPUnit_Framework_TestCase
             $smsParams = array("name" => "phpsdk");
             $smsAttributes = new SmsAttributes("陈舟锋", "SMS_15535414", $smsParams, "13735576932");
             $messageAttributes = new MessageAttributes($smsAttributes);
-            $request = new PublishMessageRequest($messageBody, $messageAttributes);
+            $request = new PublishMessageRequest($messageBody, NULL, $messageAttributes);
 
             $res = $topic->publishMessage($request);
             $this->assertTrue($res->isSucceed());
             $this->assertEquals(strtoupper($bodyMD5), $res->getMessageBodyMD5());
-            echo $res->getMessageId();
+//            echo $res->getMessageId();
             sleep(5);
         }
         catch (MnsException $e)
@@ -303,12 +266,12 @@ class TopicTest extends \PHPUnit_Framework_TestCase
 
             $mailAttributes = new MailAttributes("TestSubject", "TestAccountName");
             $messageAttributes = new MessageAttributes($mailAttributes);
-            $request = new PublishMessageRequest($messageBody, $messageAttributes);
+            $request = new PublishMessageRequest($messageBody, NULL, $messageAttributes);
 
             $res = $topic->publishMessage($request);
             $this->assertTrue($res->isSucceed());
             $this->assertEquals(strtoupper($bodyMD5), $res->getMessageBodyMD5());
-            echo $res->getMessageId();
+//            echo $res->getMessageId();
             sleep(5);
         }
         catch (MnsException $e)
@@ -369,7 +332,7 @@ class TopicTest extends \PHPUnit_Framework_TestCase
         $topic = $this->prepareTopic($topicName);
 
         $subscriptionName = 'testSubscribeSubscription' . uniqid();
-        $attributes = new SubscriptionAttributes($subscriptionName, 'http://127.0.0.1', 'BACKOFF_RETRY', 'XML');
+        $attributes = new SubscriptionAttributes($subscriptionName, 'https://www.baidu.com/', 'BACKOFF_RETRY', 'XML');
         try
         {
             $topic->subscribe($attributes);

@@ -1,6 +1,7 @@
 <?php
 namespace AliyunMNS\Responses;
 
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise\PromiseInterface;
 use AliyunMNS\Responses\BaseResponse;
 use AliyunMNS\Exception\MnsException;
@@ -38,7 +39,7 @@ class MnsPromise
             }
         } catch (TransferException $e) {
             $message = $e->getMessage();
-            if ($e->hasResponse()) {
+            if ($e instanceof RequestException && $e->hasResponse()) {
                 $message = $e->getResponse()->getBody();
             }
             throw new MnsException($e->getCode(), $message);

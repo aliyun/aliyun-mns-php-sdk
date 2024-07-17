@@ -4,7 +4,9 @@ namespace AliyunMNS\Model;
 use AliyunMNS\Constants;
 use AliyunMNS\Traits\MessagePropertiesForSend;
 
-// this class is used for BatchSend
+/**
+ * this class is recommended for sendMessage and batchSendMessage.
+ */
 class SendMessageRequestItem
 {
     use MessagePropertiesForSend;

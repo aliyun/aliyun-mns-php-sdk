@@ -1,6 +1,9 @@
 <?php
 
+require_once __DIR__ . '/../Common.php';
+
 use AliyunMNS\Client;
+use AliyunMNS\Constants;
 use AliyunMNS\Model\SubscriptionAttributes;
 use AliyunMNS\Requests\PublishMessageRequest;
 use AliyunMNS\Requests\CreateTopicRequest;
@@ -105,15 +108,20 @@ class CreateTopicAndPublishMessage
     }
 }
 
-$accessId = "";
-$accessKey = "";
+$accessId = getenv(Constants::ALIYUN_AK_ENV_KEY);
+$accessKey = getenv(Constants::ALIYUN_SK_ENV_KEY);
 $endPoint = "";
 $ip = ""; //公网IP
 $port = "8000";
 
-if (empty($accessId) || empty($accessKey) || empty($endPoint))
+if (empty($accessId) || empty($accessKey))
 {
-    echo "Must Provide AccessId/AccessKey/EndPoint to Run the Example. \n";
+    echo "Must Set AccessId/AccessKey In Env to Run the Example. \n";
+    return;
+}
+
+if (empty($endPoint) || empty($ip) || empty($port)) {
+    echo "Must Provide EndPoint/IP/Port to Run the Example. \n";
     return;
 }
 

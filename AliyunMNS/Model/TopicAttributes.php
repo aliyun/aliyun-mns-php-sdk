@@ -12,7 +12,7 @@ class TopicAttributes
 {
     private $maximumMessageSize;
     private $messageRetentionPeriod;
-    private $LoggingEnabled;
+    private $loggingEnabled;
 
     # the following attributes cannot be changed
     private $topicName;

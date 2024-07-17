@@ -1,8 +1,12 @@
 <?php
 
+require_once __DIR__ . '/../Common.php';
+
 use AliyunMNS\Client;
+use AliyunMNS\Constants;
 use AliyunMNS\Exception\MessageNotExistException;
 use AliyunMNS\Model\SubscriptionAttributes;
+use AliyunMNS\Requests\PublishBase64MessageRequest;
 use AliyunMNS\Requests\PublishMessageRequest;
 use AliyunMNS\Requests\CreateTopicRequest;
 use AliyunMNS\Requests\CreateQueueRequest;
@@ -64,16 +68,29 @@ class CreateTopicAndPushMessageToQueue
 
         // 4. send message
         $messageBody = "test";
-        $request = new PublishMessageRequest(base64_encode($messageBody));
+        // publish raw string message
+        $request = new PublishMessageRequest($messageBody);
         try {
             $res = $topic->publishMessage($request);
-            echo "MessagePublished! \n";
+            echo "RawMessagePublished! \n";
         } catch (MnsException $e) {
-            echo "PublishMessage Failed: " . $e;
+            echo "PublishRawMessage Failed: " . $e;
+            return;
+        }
+
+        // publish base64 encoded message
+        $request = new PublishBase64MessageRequest($messageBody);
+        try {
+            $res = $topic->publishMessage($request);
+            echo "Base64MessagePublished! \n";
+        } catch (MnsException $e) {
+            echo "PublishBase64Message Failed: " . $e;
             return;
         }
 
         // 5. start receive message
+        // You need to decide whether to perform base64 decoding when receiving messages
+        // based on whether the messages pushed to the topic are base64 encoded.
         while (true) {
             try {
                 $res = $queue->receiveMessage(3);
@@ -118,12 +135,18 @@ class CreateTopicAndPushMessageToQueue
     }
 }
 
-$accessId = "";
-$accessKey = "";
+$accessId = getenv(Constants::ALIYUN_AK_ENV_KEY);
+$accessKey = getenv(Constants::ALIYUN_SK_ENV_KEY);
 $endPoint = "";
 
-if (empty($accessId) || empty($accessKey) || empty($endPoint)) {
-    echo "Must Provide AccessId/AccessKey/EndPoint to Run the Example. \n";
+if (empty($accessId) || empty($accessKey))
+{
+    echo "Must Set AccessId/AccessKey In Env to Run the Example. \n";
+    return;
+}
+
+if (empty($endPoint)) {
+    echo "Must Provide EndPoint to Run the Example. \n";
     return;
 }
 

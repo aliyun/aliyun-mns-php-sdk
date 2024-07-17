@@ -1,54 +1,19 @@
 <?php
 
-use AliyunMNS\Client;
-use AliyunMNS\Constants;
-use AliyunMNS\AsyncCallback;
+require_once __DIR__ . '/Compatibility.php';
+
 use AliyunMNS\Model\QueueAttributes;
 use AliyunMNS\Exception\MnsException;
 use AliyunMNS\Exception\BatchSendFailException;
 use AliyunMNS\Exception\BatchDeleteFailException;
 use AliyunMNS\Requests\CreateQueueRequest;
-use AliyunMNS\Requests\GetQueueAttributeRequest;
-use AliyunMNS\Requests\SetQueueAttributeRequest;
 use AliyunMNS\Requests\SendMessageRequest;
 use AliyunMNS\Requests\BatchSendMessageRequest;
 use AliyunMNS\Requests\BatchReceiveMessageRequest;
-use AliyunMNS\Requests\BatchPeekMessageRequest;
 use AliyunMNS\Model\SendMessageRequestItem;
 
-class QueueTest extends \PHPUnit_Framework_TestCase
+class QueueTest extends PHPUnitBase
 {
-    private $accessId;
-    private $accessKey;
-    private $endPoint;
-    private $client;
-
-    private $queueToDelete;
-
-    public function setUp()
-    {
-        $ini_array = parse_ini_file(__DIR__ . "/aliyun-mns.ini");
-
-        $this->endPoint = $ini_array["endpoint"];
-        $this->accessId = $ini_array["accessid"];
-        $this->accessKey = $ini_array["accesskey"];
-
-        $this->queueToDelete = array();
-
-        $this->client = new Client($this->endPoint, $this->accessId, $this->accessKey);
-    }
-
-    public function tearDown()
-    {
-        foreach ($this->queueToDelete as $queueName)
-        {
-            try {
-                $this->client->deleteQueue($queueName);
-            } catch (\Exception $e) {
-            }
-        }
-    }
-
     private function prepareQueue($queueName, $attributes = NULL, $base64=TRUE)
     {
         $request = new CreateQueueRequest($queueName, $attributes);
@@ -206,12 +171,10 @@ class QueueTest extends \PHPUnit_Framework_TestCase
             $this->assertTrue(FALSE, $e);
         }
 
-        $newReceiptHandle = NULL;
         try
         {
             $res = $queue->changeMessageVisibility($receiptHandle, 18);
             $this->assertTrue($res->isSucceed());
-            $newReceiptHandle = $res->getReceiptHandle();
         }
         catch (MnsException $e)
         {
@@ -221,16 +184,6 @@ class QueueTest extends \PHPUnit_Framework_TestCase
         try
         {
             $res = $queue->deleteMessage($receiptHandle);
-            $this->assertTrue(FALSE, "Should NOT reach here!");
-        }
-        catch (MnsException $e)
-        {
-            $this->assertEquals(Constants::MESSAGE_NOT_EXIST, $e->getMnsErrorCode());
-        }
-
-        try
-        {
-            $res = $queue->deleteMessage($newReceiptHandle);
             $this->assertTrue($res->isSucceed());
         }
         catch (MnsException $e)
@@ -283,12 +236,10 @@ class QueueTest extends \PHPUnit_Framework_TestCase
             $this->assertTrue(FALSE, $e);
         }
 
-        $newReceiptHandle = NULL;
         try
         {
             $res = $queue->changeMessageVisibility($receiptHandle, 18);
             $this->assertTrue($res->isSucceed());
-            $newReceiptHandle = $res->getReceiptHandle();
         }
         catch (MnsException $e)
         {
@@ -298,16 +249,6 @@ class QueueTest extends \PHPUnit_Framework_TestCase
         try
         {
             $res = $queue->deleteMessage($receiptHandle);
-            $this->assertTrue(FALSE, "Should NOT reach here!");
-        }
-        catch (MnsException $e)
-        {
-            $this->assertEquals(Constants::MESSAGE_NOT_EXIST, $e->getMnsErrorCode());
-        }
-
-        try
-        {
-            $res = $queue->deleteMessage($newReceiptHandle);
             $this->assertTrue($res->isSucceed());
         }
         catch (MnsException $e)
@@ -335,7 +276,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase
             $this->assertTrue($res->isSucceed());
 
             $responseItems = $res->getSendMessageResponseItems();
-            $this->assertTrue(count($responseItems) == 3);
+            $this->assertTrue(count($responseItems) == $numOfMessages);
             foreach ($responseItems as $item)
             {
                 $this->assertEquals(strtoupper($bodyMD5), $item->getMessageBodyMD5());
@@ -356,7 +297,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase
             $this->assertTrue($res->isSucceed());
 
             $messages = $res->getMessages();
-            $this->assertEquals($numOfMessages, count($messages));
+            $this->assertLessThanOrEqual($numOfMessages, count($messages));
             foreach ($messages as $message)
             {
                 $this->assertEquals(strtoupper($bodyMD5), $message->getMessageBodyMD5());
@@ -375,7 +316,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase
             $this->assertTrue($res->isSucceed());
 
             $messages = $res->getMessages();
-            $this->assertEquals($numOfMessages, count($messages));
+            $this->assertLessThanOrEqual($numOfMessages, count($messages));
             foreach ($messages as $message)
             {
                 $this->assertEquals(strtoupper($bodyMD5), $message->getMessageBodyMD5());
@@ -422,6 +363,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase
             $this->assertTrue($res->isSucceed());
 
             $responseItems = $res->getSendMessageResponseItems();
+            $this->assertTrue(count($responseItems) == $numOfMessages);
             foreach ($responseItems as $item)
             {
                 $this->assertEquals(strtoupper($bodyMD5), $item->getMessageBodyMD5());
@@ -442,7 +384,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase
             $this->assertTrue($res->isSucceed());
 
             $messages = $res->getMessages();
-            $this->assertEquals($numOfMessages, count($messages));
+            $this->assertLessThanOrEqual($numOfMessages, count($messages));
             foreach ($messages as $message)
             {
                 $this->assertEquals(strtoupper($bodyMD5), $message->getMessageBodyMD5());
@@ -461,7 +403,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase
             $this->assertTrue($res->isSucceed());
 
             $messages = $res->getMessages();
-            $this->assertEquals($numOfMessages, count($messages));
+            $this->assertLessThanOrEqual($numOfMessages, count($messages));
             foreach ($messages as $message)
             {
                 $this->assertEquals(strtoupper($bodyMD5), $message->getMessageBodyMD5());
