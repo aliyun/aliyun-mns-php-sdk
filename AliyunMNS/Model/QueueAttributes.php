@@ -129,18 +129,30 @@ class QueueAttributes
         return $this->lastModifyTime;
     }
 
+    /**
+     * @deprecated activeMessages即将下线，将在后续版本中移除，请关注官方文档更新
+     */
     public function getActiveMessages()
     {
+        trigger_error("activeMessages即将下线，将在后续版本中移除，请关注官方文档更新", E_USER_DEPRECATED);
         return $this->activeMessages;
     }
 
+    /**
+     * @deprecated inactiveMessages即将下线，将在后续版本中移除，请关注官方文档更新
+     */
     public function getInactiveMessages()
     {
+        trigger_error("inactiveMessages即将下线，将在后续版本中移除，请关注官方文档更新", E_USER_DEPRECATED);
         return $this->inactiveMessages;
     }
 
+    /**
+     * @deprecated delayMessages即将下线，将在后续版本中移除，请关注官方文档更新
+     */
     public function getDelayMessages()
     {
+        trigger_error("delayMessages即将下线，将在后续版本中移除，请关注官方文档更新", E_USER_DEPRECATED);
         return $this->delayMessages;
     }
 
