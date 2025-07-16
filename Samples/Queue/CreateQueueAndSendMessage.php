@@ -98,8 +98,6 @@ class CreateQueueAndSendMessage
             {
                 echo "You got the message sent by yourself! \n";
             }
-            $res ->getRawContent();
-            echo "content: \n" . $res->getRawContent() . "\n";
             $this->echoUserProperties($res->getUserProperties());
             $this->echoSystemProperties($res->getSystemProperties());
         }
