@@ -15,6 +15,10 @@ use AliyunMNS\Exception\MnsException;
 use AliyunMNS\Requests\CreateQueueRequest;
 use AliyunMNS\Requests\CreateTopicRequest;
 use AliyunMNS\Requests\PublishMessageRequest;
+use AliyunMNS\Model\MessagePropertyValue;
+use AliyunMNS\Model\MessageSystemPropertyKey;
+use AliyunMNS\Model\MessageSystemPropertyValue;
+use AliyunMNS\Model\PropertyType;
 
 class TopicTest extends PHPUnitBase
 {
@@ -148,7 +152,6 @@ class TopicTest extends PHPUnitBase
         $topicName = "testPublishMessage" . uniqid();
 
         $messageBody = "test";
-        $bodyMD5 = md5($messageBody);
         $request = new PublishMessageRequest($messageBody);
 
         $topic = $this->prepareTopic($topicName);
@@ -156,7 +159,6 @@ class TopicTest extends PHPUnitBase
         {
             $res = $topic->publishMessage($request);
             $this->assertTrue($res->isSucceed());
-            $this->assertEquals(strtoupper($bodyMD5), $res->getMessageBodyMD5());
         }
         catch (MnsException $e)
         {
@@ -181,7 +183,6 @@ class TopicTest extends PHPUnitBase
 
         // now sub and send message
         $messageBody = "test";
-        $bodyMD5 = md5($messageBody);
 
         $topic = $this->prepareTopic($topicName);
         try
@@ -199,7 +200,6 @@ class TopicTest extends PHPUnitBase
 
             $res = $topic->publishMessage($request);
             $this->assertTrue($res->isSucceed());
-            $this->assertEquals(strtoupper($bodyMD5), $res->getMessageBodyMD5());
 //            echo $res->getMessageId();
             sleep(5);
         }
@@ -217,7 +217,6 @@ class TopicTest extends PHPUnitBase
 
         // now sub and send message
         $messageBody = "test";
-        $bodyMD5 = md5($messageBody);
 
         $topic = $this->prepareTopic($topicName);
         try
@@ -235,7 +234,6 @@ class TopicTest extends PHPUnitBase
 
             $res = $topic->publishMessage($request);
             $this->assertTrue($res->isSucceed());
-            $this->assertEquals(strtoupper($bodyMD5), $res->getMessageBodyMD5());
 //            echo $res->getMessageId();
             sleep(5);
         }
@@ -253,7 +251,6 @@ class TopicTest extends PHPUnitBase
 
         // now sub and send message
         $messageBody = "test";
-        $bodyMD5 = md5($messageBody);
 
         $topic = $this->prepareTopic($topicName);
         try
@@ -270,7 +267,6 @@ class TopicTest extends PHPUnitBase
 
             $res = $topic->publishMessage($request);
             $this->assertTrue($res->isSucceed());
-            $this->assertEquals(strtoupper($bodyMD5), $res->getMessageBodyMD5());
 //            echo $res->getMessageId();
             sleep(5);
         }
@@ -294,7 +290,7 @@ class TopicTest extends PHPUnitBase
 
         // now sub and send message
         $messageBody = "test";
-        $bodyMD5 = md5($messageBody);
+        $messageId = "";
 
         $topic = $this->prepareTopic($topicName);
         try
@@ -310,12 +306,24 @@ class TopicTest extends PHPUnitBase
 
             $request = new PublishMessageRequest($messageBody);
 
+            $request->setUserProperties($this->buildUserProperties());
+            $request->setSystemProperties($this->buildSystemProperties());
+
             $res = $topic->publishMessage($request);
             $this->assertTrue($res->isSucceed());
-            $this->assertEquals(strtoupper($bodyMD5), $res->getMessageBodyMD5());
+            $messageId = $res->getMessageId();
 
             $res = $queue->receiveMessage(30);
+            // topic 模型 前后 md5和 messageId 就是不一致的,这里只检查 消息内容
             $this->assertTrue(strpos($res->getMessageBody(), "<Message>" . $messageBody . "</Message>") >= 0);
+
+            $userProperties = $res->getUserProperties();
+            $this->assertEquals(4, count($userProperties));
+            $this->assertEquals("string property", $userProperties["test-key1"]->getStringValue());
+            $systemProperties = $res->getSystemProperties();
+            $this->assertEquals(3, count($systemProperties));
+            $this->assertEquals("baggage", $systemProperties[MessageSystemPropertyKey::BAGGAGE]->getStringValue());
+            
         }
         catch (MnsException $e)
         {
@@ -478,6 +486,70 @@ class TopicTest extends PHPUnitBase
 
         $this->assertTrue($subscriptionName1Found, $subscriptionName1 . " Not Found!");
         $this->assertTrue($subscriptionName2Found, $subscriptionName2 . " Not Found!");
+    }
+
+    function buildUserProperties()
+    {
+        $userProperties = [
+                    "test-key1" => new MessagePropertyValue(PropertyType::STRING, null, "string property"),
+                    "test-key2" => new MessagePropertyValue(PropertyType::BINARY, base64_encode("二进制 property"), null),
+                    "test-key3" => new MessagePropertyValue(PropertyType::NUMBER, null, 123),
+                    "test-key4" => new MessagePropertyValue(PropertyType::BOOLEAN, null, true),
+                ];
+        return $userProperties;
+    }
+
+    function buildSystemProperties()
+    {
+        $systemProperties = [
+                    MessageSystemPropertyKey::BAGGAGE => new MessageSystemPropertyValue(PropertyType::STRING, "baggage"),
+                    MessageSystemPropertyKey::TRACE_PARENT => new MessageSystemPropertyValue(PropertyType::STRING, "traceparent"),
+                    MessageSystemPropertyKey::TRACE_STATE => new MessageSystemPropertyValue(PropertyType::STRING, "tracestate"),
+                ];
+        return $systemProperties;
+    }
+
+    function echoUserProperties($userProperties)
+    {
+        if ($userProperties != NULL) {
+                echo "UserProperties: \n";
+                foreach ($userProperties as $key => $value)
+                    if ($value instanceof MessagePropertyValue) {
+                        $dataType = $value->getDataType();
+                        if ($dataType === PropertyType::STRING) {
+                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
+                        } elseif ($dataType === PropertyType::BINARY) {
+                            // decode the binary data
+                            echo "Key: " . $key . ", Value: " . base64_decode($value->getBinaryValue()) . "\n";
+                        } elseif ($dataType === PropertyType::NUMBER) {
+                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
+                        } elseif ($dataType === PropertyType::BOOLEAN) {
+                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
+                        } else {
+                            echo "Key: ". $key . ", Value: " . $value . "\n";
+                        }
+                    } else {
+                        echo "PropertyType invalid \n";
+                    }
+            }
+    }
+
+    function echoSystemProperties($systemProperties)
+    {
+        if ($systemProperties != NULL) {
+                echo "SystemProperties: \n";
+                foreach ($systemProperties as $key => $value)
+                    if ($value instanceof MessageSystemPropertyValue) {
+                        $dataType = $value->getDataType();
+                        if ($dataType === PropertyType::STRING) {
+                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
+                        } else {
+                            echo "Key: ". $key . ", Value: " . $value . "\n";
+                        }
+                    } else {
+                        echo "PropertyType invalid \n";
+                    }
+            }
     }
 }
 

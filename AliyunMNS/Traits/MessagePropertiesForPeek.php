@@ -8,7 +8,7 @@ use AliyunMNS\Model\Message;
 trait MessagePropertiesForPeek
 {
     use MessageIdAndMD5;
-    use MessageUserProperties;
+    use MessageProperties;
 
     protected $messageBody;
     protected $enqueueTime;
@@ -59,6 +59,7 @@ trait MessagePropertiesForPeek
         $this->dequeueCount = $message->getDequeueCount();
         $this->priority = $message->getPriority();
         $this->userProperties = $message->getUserProperties();
+        $this->systemProperties = $message->getSystemProperties();
     }
 }
 

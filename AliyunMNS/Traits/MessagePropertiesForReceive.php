@@ -28,6 +28,7 @@ trait MessagePropertiesForReceive
         $this->priority = $message->getPriority();
         $this->receiptHandle = $message->getReceiptHandle();
         $this->userProperties = $message->getUserProperties();
+        $this->systemProperties = $message->getSystemProperties();
     }
 }
 

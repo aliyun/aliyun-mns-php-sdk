@@ -15,6 +15,7 @@ class PeekMessageResponse extends BaseResponse
 
     // boolean, whether the message body will be decoded as base64
     private $base64;
+    private $rawContent; // 新增字段用于保存原始内容
 
     public function __construct($base64 = TRUE)
     {
@@ -31,9 +32,15 @@ class PeekMessageResponse extends BaseResponse
         return ($this->base64 == TRUE);
     }
 
+    public function getRawContent()
+    {
+        return $this->rawContent;
+    }
+
     public function parseResponse($statusCode, $content)
     {
         $this->statusCode = $statusCode;
+        $this->rawContent = $content;
         if ($statusCode == 200) {
             $this->succeed = TRUE;
         } else {

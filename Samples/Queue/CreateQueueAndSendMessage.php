@@ -10,6 +10,8 @@ use AliyunMNS\Requests\SendMessageRequest;
 use AliyunMNS\Requests\CreateQueueRequest;
 use AliyunMNS\Exception\MnsException;
 use AliyunMNS\Model\MessagePropertyValue;
+use AliyunMNS\Model\MessageSystemPropertyKey;
+use AliyunMNS\Model\MessageSystemPropertyValue;
 use AliyunMNS\Model\PropertyType;
 
 class CreateQueueAndSendMessage
@@ -49,7 +51,7 @@ class CreateQueueAndSendMessage
         // Base64 is enabled by default and can be disabled using queue->setBase64(false);
 
         // 2. send message
-        $messageBody = "aaaaaaaaa";
+        $messageBody = "this is a test message!";
         $bodyMD5 = md5(base64_encode($messageBody));
         // as the messageBody will be automatically encoded
         // the MD5 is calculated for the encoded body
@@ -59,11 +61,9 @@ class CreateQueueAndSendMessage
         $request = new SendMessageRequest($messageBody);
         try
         {
-        // 使用关联数组设置用户属性
-        $userProperties = [
-            "test-suha1" => new MessagePropertyValue(PropertyType::STRING, null, "test")
-        ];
-        $request->setUserProperties($userProperties);
+            // 设置用户属性
+            // $request->setUserProperties($this->buildUserProperties());
+            // $request->setSystemProperties($this->buildSystemProperties());
             $res = $queue->sendMessage($request);
             echo "MessageSent! \n";
         }
@@ -77,12 +77,9 @@ class CreateQueueAndSendMessage
         $requestItem = new SendMessageRequestItem($messageBody);
         try
         {
-        // 使用关联数组设置用户属性
-        // $userProperties = [
-        //     "test-suha2" => new MessagePropertyValue(PropertyType::STRING, null, "test"),
-        //     "test-suha3" => new MessagePropertyValue(PropertyType::BINARY, null, base64_encode("test"))
-        // ];
-        // $requestItem->setUserProperties($userProperties);
+            // 设置用户属性
+            // $requestItem->setUserProperties($this->buildUserProperties());
+            // $requestItem->setSystemProperties($this->buildSystemProperties());
             $res = $queue->sendMessage($requestItem);
             echo "MessageSent! \n";
         }
@@ -101,24 +98,10 @@ class CreateQueueAndSendMessage
             {
                 echo "You got the message sent by yourself! \n";
             }
-
-            $userPropertiesRes = $res->getUserProperties();
-            if ($userPropertiesRes != NULL) {
-                echo "UserProperties: \n";
-                foreach ($userPropertiesRes as $key => $value)
-                    if ($value instanceof MessagePropertyValue) {
-                        $dataType = $value->getDataType();
-                        if ($dataType === PropertyType::STRING) {
-                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
-                        } elseif ($dataType === PropertyType::BINARY) {
-                            echo "Key: " . $key . ", Value: [binary data] (Base64: " . base64_encode($value->getBinaryValue()) . ")\n";
-                        } else {
-                            echo "Key: " . $key . ", Value: [unknown type]\n";
-                        }
-                    } else {
-                        echo "Key: " . $key . ", Value: " . $value . "\n";
-                    }
-            }
+            $res ->getRawContent();
+            echo "content: \n" . $res->getRawContent() . "\n";
+            $this->echoUserProperties($res->getUserProperties());
+            $this->echoSystemProperties($res->getSystemProperties());
         }
         catch (MnsException $e)
         {
@@ -140,23 +123,8 @@ class CreateQueueAndSendMessage
             }
             $receiptHandle = $res->getReceiptHandle();
            
-            $userPropertiesRes = $res->getUserProperties();
-            if ($userPropertiesRes != NULL) {
-                echo "UserProperties: \n";
-                foreach ($userPropertiesRes as $key => $value)
-                    if ($value instanceof MessagePropertyValue) {
-                        $dataType = $value->getDataType();
-                        if ($dataType === PropertyType::STRING) {
-                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
-                        } elseif ($dataType === PropertyType::BINARY) {
-                            echo "Key: " . $key . ", Value: [binary data] (Base64: " . base64_encode($value->getBinaryValue()) . ")\n";
-                        } else {
-                            echo "Key: " . $key . ", Value: [unknown type]\n";
-                        }
-                    } else {
-                        echo "Key: " . $key . ", Value: " . $value . "\n";
-                    }
-            }
+            $this->echoUserProperties($res->getUserProperties());
+            $this->echoSystemProperties($res->getSystemProperties());
         }
         catch (MnsException $e)
         {
@@ -180,59 +148,68 @@ class CreateQueueAndSendMessage
         $queue->setBase64(false);
 
         // 6. batch send message
-        // try {
-        //     // 创建 SendMessageRequestItem 数组
-        //     $requestItems = array();
-        //     for ($i = 0; $i < 16; $i++) {
-        //         $messageBody = "test" . $i;
-        //         $requestItems[] = new SendMessageRequestItem($messageBody);
-        //     }
-        //     $res = $queue->batchSendMessage($requestItems);
-        //     echo "BatchSendMessage Succeed! \n";
-        // }
-        // catch (MnsException $e)
-        // {
-        //     echo "BatchSendMessage Failed: " . $e;
-        //     return;
-        // }
+        try {
+            // 创建 SendMessageRequestItem 数组
+            $requestItems = array();
+            for ($i = 0; $i < 16; $i++) {
+                $messageBody = "test" . $i;
+                $requestItems[] = new SendMessageRequestItem($messageBody);
+                // 设置用户属性
+                $requestItems[$i]->setUserProperties($this->buildUserProperties());
+                $requestItems[$i]->setSystemProperties($this->buildSystemProperties());
+            }
+            $res = $queue->batchSendMessage($requestItems);
+            echo "BatchSendMessage Succeed! \n";
+        }
+        catch (MnsException $e)
+        {
+            echo "BatchSendMessage Failed: " . $e;
+            return;
+        }
 
-        // // 7. batch peek message
-        // try {
-        //     $res = $queue->batchPeekMessage(3);
-        //     echo "BatchPeekMessage Succeed! \n";
-        // }
-        // catch (MnsException $e)
-        // {
-        //     echo "BatchPeekMessage Failed: " . $e;
-        //     return;
-        // }
+        // 7. batch peek message
+        try {
+            $res = $queue->batchPeekMessage(3);
+            echo "BatchPeekMessage Succeed! \n";
+            for ($i = 0; $i < count($res->getMessages()); $i++) {
+                $this->echoUserProperties($res->getMessages()[$i]->getUserProperties());
+                $this->echoSystemProperties($res->getMessages()[$i]->getSystemProperties());
+            }
+        }
+        catch (MnsException $e)
+        {
+            echo "BatchPeekMessage Failed: " . $e;
+            return;
+        }
 
-        // // 8. batch receive message
-        // try {
-        //     $request = new BatchReceiveMessageRequest(3, 30);
-        //     $res = $queue->batchReceiveMessage($request);
-        //     $receiptHandles = array();
-        //     for ($i = 0; $i < count($res->getMessages()); $i++) {
-        //         $receiptHandles[] = $res->getMessages()[$i]->getReceiptHandle();
-        //     }
-        //     echo "BatchReceiveMessage Succeed! \n";
-        // }
-        // catch (MnsException $e)
-        // {
-        //     echo "BatchReceiveMessage Failed: " . $e;
-        //     return;
-        // }
+        // 8. batch receive message
+        try {
+            $request = new BatchReceiveMessageRequest(3, 30);
+            $res = $queue->batchReceiveMessage($request);
+            $receiptHandles = array();
+            for ($i = 0; $i < count($res->getMessages()); $i++) {
+                $receiptHandles[] = $res->getMessages()[$i]->getReceiptHandle();
+                $this->echoUserProperties($res->getMessages()[$i]->getUserProperties());
+                $this->echoSystemProperties($res->getMessages()[$i]->getSystemProperties());
+            }
+            echo "BatchReceiveMessage Succeed! \n";
+        }
+        catch (MnsException $e)
+        {
+            echo "BatchReceiveMessage Failed: " . $e;
+            return;
+        }
 
-        // // 9. batch delete message
-        // try {
-        //     $res = $queue->batchDeleteMessage($receiptHandles);
-        //     echo "BatchDeleteMessage Succeed! \n";
-        // }
-        // catch (MnsException $e)
-        // {
-        //     echo "BatchDeleteMessage Failed: " . $e;
-        //     return;
-        // }
+        // 9. batch delete message
+        try {
+            $res = $queue->batchDeleteMessage($receiptHandles);
+            echo "BatchDeleteMessage Succeed! \n";
+        }
+        catch (MnsException $e)
+        {
+            echo "BatchDeleteMessage Failed: " . $e;
+            return;
+        }
 
 
         // 10. delete queue
@@ -243,6 +220,70 @@ class CreateQueueAndSendMessage
             echo "DeleteQueue Failed: " . $e;
             return;
         }
+    }
+
+    function buildUserProperties()
+    {
+        $userProperties = [
+                    "test-key1" => new MessagePropertyValue(PropertyType::STRING, null, "string property"),
+                    "test-key2" => new MessagePropertyValue(PropertyType::BINARY, base64_encode("二进制 property"), null),
+                    "test-key3" => new MessagePropertyValue(PropertyType::NUMBER, null, 123),
+                    "test-key4" => new MessagePropertyValue(PropertyType::BOOLEAN, null, true),
+                ];
+        return $userProperties;
+    }
+
+    function buildSystemProperties()
+    {
+        $systemProperties = [
+                    MessageSystemPropertyKey::BAGGAGE => new MessageSystemPropertyValue(PropertyType::STRING, "baggage"),
+                    MessageSystemPropertyKey::TRACE_PARENT => new MessageSystemPropertyValue(PropertyType::STRING, "traceparent"),
+                    MessageSystemPropertyKey::TRACE_STATE => new MessageSystemPropertyValue(PropertyType::STRING, "tracestate"),
+                ];
+        return $systemProperties;
+    }
+
+    function echoUserProperties($userProperties)
+    {
+        if ($userProperties != NULL) {
+                echo "UserProperties: \n";
+                foreach ($userProperties as $key => $value)
+                    if ($value instanceof MessagePropertyValue) {
+                        $dataType = $value->getDataType();
+                        if ($dataType === PropertyType::STRING) {
+                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
+                        } elseif ($dataType === PropertyType::BINARY) {
+                            // decode the binary data
+                            echo "Key: " . $key . ", Value: " . base64_decode($value->getBinaryValue()) . "\n";
+                        } elseif ($dataType === PropertyType::NUMBER) {
+                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
+                        } elseif ($dataType === PropertyType::BOOLEAN) {
+                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
+                        } else {
+                            echo "Key: ". $key . ", Value: " . $value . "\n";
+                        }
+                    } else {
+                        echo "PropertyType invalid \n";
+                    }
+            }
+    }
+
+    function echoSystemProperties($systemProperties)
+    {
+        if ($systemProperties != NULL) {
+                echo "SystemProperties: \n";
+                foreach ($systemProperties as $key => $value)
+                    if ($value instanceof MessageSystemPropertyValue) {
+                        $dataType = $value->getDataType();
+                        if ($dataType === PropertyType::STRING) {
+                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
+                        } else {
+                            echo "Key: ". $key . ", Value: " . $value . "\n";
+                        }
+                    } else {
+                        echo "PropertyType invalid \n";
+                    }
+            }
     }
 }
 

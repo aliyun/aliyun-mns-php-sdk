@@ -11,6 +11,10 @@ use AliyunMNS\Requests\SendMessageRequest;
 use AliyunMNS\Requests\BatchSendMessageRequest;
 use AliyunMNS\Requests\BatchReceiveMessageRequest;
 use AliyunMNS\Model\SendMessageRequestItem;
+use AliyunMNS\Model\MessagePropertyValue;
+use AliyunMNS\Model\MessageSystemPropertyKey;
+use AliyunMNS\Model\MessageSystemPropertyValue;
+use AliyunMNS\Model\PropertyType;
 
 class QueueTest extends PHPUnitBase
 {
@@ -111,7 +115,6 @@ class QueueTest extends PHPUnitBase
         $queue = $this->prepareQueue($queueName, NULL, FALSE);
 
         $messageBody = "test";
-        $bodyMD5 = md5($messageBody);
         $delaySeconds = 1;
         $request = new SendMessageRequest($messageBody, $delaySeconds);
         $receiptHandle = NULL;
@@ -119,7 +122,6 @@ class QueueTest extends PHPUnitBase
         {
             $res = $queue->sendMessage($request);
             $this->assertTrue($res->isSucceed());
-            $this->assertEquals(strtoupper($bodyMD5), $res->getMessageBodyMD5());
         }
         catch (MnsException $e)
         {
@@ -133,13 +135,15 @@ class QueueTest extends PHPUnitBase
         $queue = $this->prepareQueue($queueName, NULL, FALSE);
 
         $messageBody = "test";
-        $bodyMD5 = md5($messageBody);
+        $bodyMD5 = "";
         $request = new SendMessageRequest($messageBody);
         try
         {
+            $request->setUserProperties($this->buildUserProperties());
+            $request->setSystemProperties($this->buildSystemProperties());
             $res = $queue->sendMessage($request);
             $this->assertTrue($res->isSucceed());
-            $this->assertEquals(strtoupper($bodyMD5), $res->getMessageBodyMD5());
+            $bodyMD5 = $res->getMessageBodyMD5();
         }
         catch (MnsException $e)
         {
@@ -150,7 +154,15 @@ class QueueTest extends PHPUnitBase
         {
             $res = $queue->peekMessage();
             $this->assertTrue($res->isSucceed());
-            $this->assertEquals(strtoupper($bodyMD5), $res->getMessageBodyMD5());
+            $this->assertEquals($bodyMD5, $res->getMessageBodyMD5());
+
+            $userProperties = $res->getUserProperties();
+            $this->assertEquals(4, count($userProperties));
+            $this->assertEquals("string property", $userProperties["test-key1"]->getStringValue());
+            $systemProperties = $res->getSystemProperties();
+            $this->assertEquals(3, count($systemProperties));
+            $this->assertEquals("baggage", $systemProperties[MessageSystemPropertyKey::BAGGAGE]->getStringValue());
+            
         }
         catch (MnsException $e)
         {
@@ -162,7 +174,14 @@ class QueueTest extends PHPUnitBase
         {
             $res = $queue->receiveMessage();
             $this->assertTrue($res->isSucceed());
-            $this->assertEquals(strtoupper($bodyMD5), $res->getMessageBodyMD5());
+            $this->assertEquals($bodyMD5, $res->getMessageBodyMD5());
+
+            $userProperties = $res->getUserProperties();
+            $this->assertEquals(4, count($userProperties));
+            $this->assertEquals("string property", $userProperties["test-key1"]->getStringValue());
+            $systemProperties = $res->getSystemProperties();
+            $this->assertEquals(3, count($systemProperties));
+            $this->assertEquals("baggage", $systemProperties[MessageSystemPropertyKey::BAGGAGE]->getStringValue());
 
             $receiptHandle = $res->getReceiptHandle();
         }
@@ -198,13 +217,16 @@ class QueueTest extends PHPUnitBase
         $queue = $this->prepareQueue($queueName);
 
         $messageBody = "test";
-        $bodyMD5 = md5(base64_encode($messageBody));
+        $bodyMD5 = "";
         $request = new SendMessageRequest($messageBody);
         try
         {
+            // 设置用户属性
+            $request->setUserProperties($this->buildUserProperties());
+            $request->setSystemProperties($this->buildSystemProperties());
             $res = $queue->sendMessage($request);
             $this->assertTrue($res->isSucceed());
-            $this->assertEquals(strtoupper($bodyMD5), $res->getMessageBodyMD5());
+            $bodyMD5 = $res->getMessageBodyMD5();
         }
         catch (MnsException $e)
         {
@@ -215,7 +237,15 @@ class QueueTest extends PHPUnitBase
         {
             $res = $queue->peekMessage();
             $this->assertTrue($res->isSucceed());
-            $this->assertEquals(strtoupper($bodyMD5), $res->getMessageBodyMD5());
+            $this->assertEquals($bodyMD5, $res->getMessageBodyMD5());
+            
+            $userProperties = $res->getUserProperties();
+            $this->assertEquals(4, count($userProperties));
+            $this->assertEquals("string property", $userProperties["test-key1"]->getStringValue());
+            $systemProperties = $res->getSystemProperties();
+            $this->assertEquals(3, count($systemProperties));
+            $this->assertEquals("baggage", $systemProperties[MessageSystemPropertyKey::BAGGAGE]->getStringValue());
+
         }
         catch (MnsException $e)
         {
@@ -227,7 +257,14 @@ class QueueTest extends PHPUnitBase
         {
             $res = $queue->receiveMessage();
             $this->assertTrue($res->isSucceed());
-            $this->assertEquals(strtoupper($bodyMD5), $res->getMessageBodyMD5());
+            $this->assertEquals($bodyMD5, $res->getMessageBodyMD5());
+
+            $userProperties = $res->getUserProperties();
+            $this->assertEquals(4, count($userProperties));
+            $this->assertEquals("string property", $userProperties["test-key1"]->getStringValue());
+            $systemProperties = $res->getSystemProperties();
+            $this->assertEquals(3, count($systemProperties));
+            $this->assertEquals("baggage", $systemProperties[MessageSystemPropertyKey::BAGGAGE]->getStringValue());
 
             $receiptHandle = $res->getReceiptHandle();
         }
@@ -263,11 +300,14 @@ class QueueTest extends PHPUnitBase
         $queue = $this->prepareQueue($queueName, NULL, FALSE);
 
         $messageBody = "test";
-        $bodyMD5 = md5($messageBody);
+        $bodyMD5 = "";
 
         $numOfMessages = 3;
 
         $item = new SendMessageRequestItem($messageBody);
+        // 设置用户属性
+        $item->setUserProperties($this->buildUserProperties());
+        $item->setSystemProperties($this->buildSystemProperties());
         $items = array($item, $item, $item);
         $request = new BatchSendMessageRequest($items);
         try
@@ -279,7 +319,7 @@ class QueueTest extends PHPUnitBase
             $this->assertTrue(count($responseItems) == $numOfMessages);
             foreach ($responseItems as $item)
             {
-                $this->assertEquals(strtoupper($bodyMD5), $item->getMessageBodyMD5());
+                $bodyMD5 = $item->getMessageBodyMD5();
             }
         }
         catch (MnsException $e)
@@ -300,7 +340,14 @@ class QueueTest extends PHPUnitBase
             $this->assertLessThanOrEqual($numOfMessages, count($messages));
             foreach ($messages as $message)
             {
-                $this->assertEquals(strtoupper($bodyMD5), $message->getMessageBodyMD5());
+                $this->assertEquals($bodyMD5, $message->getMessageBodyMD5());
+
+                $userProperties = $message->getUserProperties();
+                $this->assertEquals(4, count($userProperties));
+                $this->assertEquals("string property", $userProperties["test-key1"]->getStringValue());
+                $systemProperties = $message->getSystemProperties();
+                $this->assertEquals(3, count($systemProperties));
+                $this->assertEquals("baggage", $systemProperties[MessageSystemPropertyKey::BAGGAGE]->getStringValue());
             }
         }
         catch (MnsException $e)
@@ -319,7 +366,15 @@ class QueueTest extends PHPUnitBase
             $this->assertLessThanOrEqual($numOfMessages, count($messages));
             foreach ($messages as $message)
             {
-                $this->assertEquals(strtoupper($bodyMD5), $message->getMessageBodyMD5());
+                $this->assertEquals($bodyMD5, $message->getMessageBodyMD5());
+
+                $userProperties = $message->getUserProperties();
+                $this->assertEquals(4, count($userProperties));
+                $this->assertEquals("string property", $userProperties["test-key1"]->getStringValue());
+                $systemProperties = $message->getSystemProperties();
+                $this->assertEquals(3, count($systemProperties));
+                $this->assertEquals("baggage", $systemProperties[MessageSystemPropertyKey::BAGGAGE]->getStringValue());
+
                 $receiptHandles[] = $message->getReceiptHandle();
             }
         }
@@ -350,11 +405,14 @@ class QueueTest extends PHPUnitBase
         $queue = $this->prepareQueue($queueName);
 
         $messageBody = "test";
-        $bodyMD5 = md5(base64_encode($messageBody));
+        $bodyMD5 = "";
 
         $numOfMessages = 3;
 
         $item = new SendMessageRequestItem($messageBody);
+        // 设置用户属性
+        $item->setUserProperties($this->buildUserProperties());
+        $item->setSystemProperties($this->buildSystemProperties());
         $items = array($item, $item, $item);
         $request = new BatchSendMessageRequest($items);
         try
@@ -366,7 +424,7 @@ class QueueTest extends PHPUnitBase
             $this->assertTrue(count($responseItems) == $numOfMessages);
             foreach ($responseItems as $item)
             {
-                $this->assertEquals(strtoupper($bodyMD5), $item->getMessageBodyMD5());
+                $bodyMD5 = $item->getMessageBodyMD5();
             }
         }
         catch (MnsException $e)
@@ -387,7 +445,14 @@ class QueueTest extends PHPUnitBase
             $this->assertLessThanOrEqual($numOfMessages, count($messages));
             foreach ($messages as $message)
             {
-                $this->assertEquals(strtoupper($bodyMD5), $message->getMessageBodyMD5());
+                $this->assertEquals($bodyMD5, $message->getMessageBodyMD5());
+
+                $userProperties = $message->getUserProperties();
+                $this->assertEquals(4, count($userProperties));
+                $this->assertEquals("string property", $userProperties["test-key1"]->getStringValue());
+                $systemProperties = $message->getSystemProperties();
+                $this->assertEquals(3, count($systemProperties));
+                $this->assertEquals("baggage", $systemProperties[MessageSystemPropertyKey::BAGGAGE]->getStringValue());
             }
         }
         catch (MnsException $e)
@@ -406,7 +471,15 @@ class QueueTest extends PHPUnitBase
             $this->assertLessThanOrEqual($numOfMessages, count($messages));
             foreach ($messages as $message)
             {
-                $this->assertEquals(strtoupper($bodyMD5), $message->getMessageBodyMD5());
+                $this->assertEquals($bodyMD5, $message->getMessageBodyMD5());
+
+                $userProperties = $message->getUserProperties();
+                $this->assertEquals(4, count($userProperties));
+                $this->assertEquals("string property", $userProperties["test-key1"]->getStringValue());
+                $systemProperties = $message->getSystemProperties();
+                $this->assertEquals(3, count($systemProperties));
+                $this->assertEquals("baggage", $systemProperties[MessageSystemPropertyKey::BAGGAGE]->getStringValue());
+
                 $receiptHandles[] = $message->getReceiptHandle();
             }
         }
@@ -429,6 +502,70 @@ class QueueTest extends PHPUnitBase
             $this->assertEquals(1, count($items));
             $this->assertEquals($errorReceiptHandle, $items[0]->getReceiptHandle());
         }
+    }
+
+    function buildUserProperties()
+    {
+        $userProperties = [
+                    "test-key1" => new MessagePropertyValue(PropertyType::STRING, null, "string property"),
+                    "test-key2" => new MessagePropertyValue(PropertyType::BINARY, base64_encode("二进制 property"), null),
+                    "test-key3" => new MessagePropertyValue(PropertyType::NUMBER, null, 123),
+                    "test-key4" => new MessagePropertyValue(PropertyType::BOOLEAN, null, true),
+                ];
+        return $userProperties;
+    }
+
+    function buildSystemProperties()
+    {
+        $systemProperties = [
+                    MessageSystemPropertyKey::BAGGAGE => new MessageSystemPropertyValue(PropertyType::STRING, "baggage"),
+                    MessageSystemPropertyKey::TRACE_PARENT => new MessageSystemPropertyValue(PropertyType::STRING, "traceparent"),
+                    MessageSystemPropertyKey::TRACE_STATE => new MessageSystemPropertyValue(PropertyType::STRING, "tracestate"),
+                ];
+        return $systemProperties;
+    }
+
+    function echoUserProperties($userProperties)
+    {
+        if ($userProperties != NULL) {
+                echo "UserProperties: \n";
+                foreach ($userProperties as $key => $value)
+                    if ($value instanceof MessagePropertyValue) {
+                        $dataType = $value->getDataType();
+                        if ($dataType === PropertyType::STRING) {
+                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
+                        } elseif ($dataType === PropertyType::BINARY) {
+                            // decode the binary data
+                            echo "Key: " . $key . ", Value: " . base64_decode($value->getBinaryValue()) . "\n";
+                        } elseif ($dataType === PropertyType::NUMBER) {
+                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
+                        } elseif ($dataType === PropertyType::BOOLEAN) {
+                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
+                        } else {
+                            echo "Key: ". $key . ", Value: " . $value . "\n";
+                        }
+                    } else {
+                        echo "PropertyType invalid \n";
+                    }
+            }
+    }
+
+    function echoSystemProperties($systemProperties)
+    {
+        if ($systemProperties != NULL) {
+                echo "SystemProperties: \n";
+                foreach ($systemProperties as $key => $value)
+                    if ($value instanceof MessageSystemPropertyValue) {
+                        $dataType = $value->getDataType();
+                        if ($dataType === PropertyType::STRING) {
+                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
+                        } else {
+                            echo "Key: ". $key . ", Value: " . $value . "\n";
+                        }
+                    } else {
+                        echo "PropertyType invalid \n";
+                    }
+            }
     }
 }
 

@@ -39,7 +39,6 @@ class PublishMessageRequest extends BaseRequest
         $xmlWriter->startDocument("1.0", "UTF-8");
         $xmlWriter->startElementNS(NULL, "Message", Constants::MNS_XML_NAMESPACE);
         $this->writeMessagePropertiesForPublishXML($xmlWriter);
-        $this->writeXMLForUserProperties($xmlWriter);
         $xmlWriter->endElement();
         $xmlWriter->endDocument();
         return $xmlWriter->outputMemory();
