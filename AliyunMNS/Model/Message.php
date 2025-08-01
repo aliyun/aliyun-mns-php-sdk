@@ -32,6 +32,8 @@ class Message
         $dequeueCount = NULL;
         $priority = NULL;
         $receiptHandle = NULL;
+        $userProperties = [];
+        $systemProperties = [];
 
         while ($xmlReader->read())
         {
@@ -106,6 +108,12 @@ class Message
                         $receiptHandle = $xmlReader->value;
                     }
                     break;
+                case Constants::SYSTEM_PROPERTIES_TAG:
+                    $systemProperties = self::parseSystemPropertiesFromXML($xmlReader);
+                    break;
+                case Constants::USER_PROPERTIES_TAG:
+                    $userProperties = self::parseUserPropertiesFromXML($xmlReader);
+                    break;
                 }
                 break;
             case \XMLReader::END_ELEMENT:
@@ -121,6 +129,8 @@ class Message
                         $dequeueCount,
                         $priority,
                         $receiptHandle);
+                        $message->setUserProperties($userProperties);
+                        $message->setSystemProperties($systemProperties);
                     return $message;
                 }
                 break;
@@ -137,7 +147,8 @@ class Message
             $dequeueCount,
             $priority,
             $receiptHandle);
-
+            $message->setUserProperties($userProperties);
+            $message->setSystemProperties($systemProperties);
         return $message;
     }
 }

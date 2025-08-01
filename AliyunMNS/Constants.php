@@ -62,6 +62,14 @@ class Constants
     const SMS_PARAMS = "SmsParams";
     const IMPORTANCE_LEVEL = "ImportanceLevel";
 
+    const USER_PROPERTIES_TAG = "UserProperties";
+    const MESSAGE_PROPERTY_TAG = "PropertyValue";
+    const SYSTEM_PROPERTIES_TAG = "SystemProperties";
+    const MESSAGE_SYSTEM_PROPERTY_TAG = "SystemPropertyValue";
+    const PROPERTY_VALUE_TAG = "Value";
+    const PROPERTY_NAME_TAG = "Name";
+    const PROPERTY_TYPE_TAG = "Type";
+
     // some MNS ErrorCodes
     const INVALID_ARGUMENT = "InvalidArgument";
     const QUEUE_ALREADY_EXIST = "QueueAlreadyExist";

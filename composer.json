@@ -1,6 +1,6 @@
 {
     "name": "aliyun/aliyun-mns-php-sdk",
-    "version": "1.3.7",
+    "version": "1.4.0",
     "type": "library",
     "description": "Aliyun Message and Notification Service SDK for PHP, PHP>=5.5.0",
     "keywords": ["Aliyun", "mns", "MNS", "Message", "Message Service", "Notification"],

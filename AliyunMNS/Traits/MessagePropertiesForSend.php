@@ -5,6 +5,8 @@ use AliyunMNS\Constants;
 
 trait MessagePropertiesForSend
 {
+    use MessageProperties;
+    
     protected $messageBody;
     protected $delaySeconds;
     protected $priority;
@@ -56,6 +58,20 @@ trait MessagePropertiesForSend
         if ($this->priority != NULL)
         {
             $xmlWriter->writeElement(Constants::PRIORITY, $this->priority);
+        }
+        if ($this->userProperties != NULL) {
+            $xmlWriter->startElement(Constants::USER_PROPERTIES_TAG);
+            foreach ($this->userProperties as $name => $propertyValue) {
+                $propertyValue->writeXML($xmlWriter, $name);
+            }
+            $xmlWriter->endElement();
+        }
+        if ($this->systemProperties != NULL) {
+            $xmlWriter->startElement(Constants::SYSTEM_PROPERTIES_TAG);
+            foreach ($this->systemProperties as $name => $propertyValue) {
+                $propertyValue->writeXML($xmlWriter, $name);
+            }
+            $xmlWriter->endElement();
         }
     }
 }

@@ -11,6 +11,10 @@ use AliyunMNS\Requests\PublishMessageRequest;
 use AliyunMNS\Requests\CreateTopicRequest;
 use AliyunMNS\Requests\CreateQueueRequest;
 use AliyunMNS\Exception\MnsException;
+use AliyunMNS\Model\MessagePropertyValue;
+use AliyunMNS\Model\MessageSystemPropertyKey;
+use AliyunMNS\Model\MessageSystemPropertyValue;
+use AliyunMNS\Model\PropertyType;
 
 class CreateTopicAndPushMessageToQueue
 {
@@ -71,6 +75,9 @@ class CreateTopicAndPushMessageToQueue
         // publish raw string message
         $request = new PublishMessageRequest($messageBody);
         try {
+        // 设置用户属性
+        $request->setUserProperties($this->buildUserProperties());
+        $request->setSystemProperties($this->buildSystemProperties());
             $res = $topic->publishMessage($request);
             echo "RawMessagePublished! \n";
         } catch (MnsException $e) {
@@ -81,6 +88,9 @@ class CreateTopicAndPushMessageToQueue
         // publish base64 encoded message
         $request = new PublishBase64MessageRequest($messageBody);
         try {
+        // 设置用户属性
+        $request->setUserProperties($this->buildUserProperties());
+        $request->setSystemProperties($this->buildSystemProperties());
             $res = $topic->publishMessage($request);
             echo "Base64MessagePublished! \n";
         } catch (MnsException $e) {
@@ -96,6 +106,10 @@ class CreateTopicAndPushMessageToQueue
                 $res = $queue->receiveMessage(3);
                 echo "Receive Message success, MessageBody: " . $res->getMessageBody() . "\n";
                 $receiptHandle = $res->getReceiptHandle();
+
+                $this->echoUserProperties($res->getUserProperties());
+                $this->echoSystemProperties($res->getSystemProperties());
+
                 $queue->deleteMessage($receiptHandle);
                 echo "DeleteMessage Succeed! \n";
                 break;
@@ -132,6 +146,70 @@ class CreateTopicAndPushMessageToQueue
             echo "DeleteQueue Failed: " . $e;
             return;
         }
+    }
+
+    function buildUserProperties()
+    {
+        $userProperties = [
+                    "test-key1" => new MessagePropertyValue(PropertyType::STRING, null, "string property"),
+                    "test-key2" => new MessagePropertyValue(PropertyType::BINARY, base64_encode("二进制 property"), null),
+                    "test-key3" => new MessagePropertyValue(PropertyType::NUMBER, null, 123),
+                    "test-key4" => new MessagePropertyValue(PropertyType::BOOLEAN, null, true),
+                ];
+        return $userProperties;
+    }
+
+    function buildSystemProperties()
+    {
+        $systemProperties = [
+                    MessageSystemPropertyKey::BAGGAGE => new MessageSystemPropertyValue(PropertyType::STRING, "baggage"),
+                    MessageSystemPropertyKey::TRACE_PARENT => new MessageSystemPropertyValue(PropertyType::STRING, "traceparent"),
+                    MessageSystemPropertyKey::TRACE_STATE => new MessageSystemPropertyValue(PropertyType::STRING, "tracestate"),
+                ];
+        return $systemProperties;
+    }
+
+    function echoUserProperties($userProperties)
+    {
+        if ($userProperties != NULL) {
+                echo "UserProperties: \n";
+                foreach ($userProperties as $key => $value)
+                    if ($value instanceof MessagePropertyValue) {
+                        $dataType = $value->getDataType();
+                        if ($dataType === PropertyType::STRING) {
+                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
+                        } elseif ($dataType === PropertyType::BINARY) {
+                            // decode the binary data
+                            echo "Key: " . $key . ", Value: " . base64_decode($value->getBinaryValue()) . "\n";
+                        } elseif ($dataType === PropertyType::NUMBER) {
+                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
+                        } elseif ($dataType === PropertyType::BOOLEAN) {
+                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
+                        } else {
+                            echo "Key: ". $key . ", Value: " . $value . "\n";
+                        }
+                    } else {
+                        echo "PropertyType invalid \n";
+                    }
+            }
+    }
+
+    function echoSystemProperties($systemProperties)
+    {
+        if ($systemProperties != NULL) {
+                echo "SystemProperties: \n";
+                foreach ($systemProperties as $key => $value)
+                    if ($value instanceof MessageSystemPropertyValue) {
+                        $dataType = $value->getDataType();
+                        if ($dataType === PropertyType::STRING) {
+                            echo "Key: " . $key . ", Value: " . $value->getStringValue() . "\n";
+                        } else {
+                            echo "Key: ". $key . ", Value: " . $value . "\n";
+                        }
+                    } else {
+                        echo "PropertyType invalid \n";
+                    }
+            }
     }
 }
 
